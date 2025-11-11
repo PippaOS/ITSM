@@ -9,7 +9,7 @@ import {
   vStreamArgs,
 } from '@convex-dev/agent';
 import { v } from 'convex/values';
-import { agent } from './agents/simple';
+import { getAgentWithDynamicModel } from './agents/simple';
 import { authorizeThreadAccess } from './threads';
 import { paginationOptsValidator } from 'convex/server';
 import { getAllTools } from './agents/tools';
@@ -98,9 +98,12 @@ export const generateResponse = internalAction({
     // All users have access to all tools
     const tools = getAllTools() as Record<string, GenericTool>;
 
+    // Get agent with dynamic model from database config
+    const dynamicAgent = await getAgentWithDynamicModel(ctx);
+
     // Use streamText instead of generateText to enable real-time streaming
     // saveStreamDeltas automatically handles stream consumption and saves deltas
-    await agent.streamText(
+    await dynamicAgent.streamText(
       ctx,
       { threadId },
       {
@@ -175,12 +178,15 @@ export const runToolForThread = action({
       throw new Error(`Tool ${toolName} is not available for this thread`);
     }
 
+    // Get agent with dynamic model from database config
+    const dynamicAgent = await getAgentWithDynamicModel(ctx);
+
     // Inject threadId and agent metadata into the tool context
     const toolContext = {
       ...(ctx as unknown as Record<string, unknown>),
       threadId,
       userId,
-      agent,
+      agent: dynamicAgent,
     };
     const toolInstance = {
       ...selected,

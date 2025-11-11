@@ -12,6 +12,7 @@ import TicketsPage from './pages/TicketsPage';
 import TicketDetailPage from './pages/TicketDetailPage';
 import ChatPage from './pages/ChatPage';
 import ChatsPage from './pages/ChatsPage';
+import SettingsPage from './pages/SettingsPage';
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
                   <Route path="/users/:id" element={<UserDetailPage />} />
                   <Route path="/tickets" element={<TicketsPage />} />
                   <Route path="/tickets/:id" element={<TicketDetailPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
                 </Routes>
               </Layout>
             </ProtectedRoute>

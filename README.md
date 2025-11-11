@@ -93,6 +93,21 @@ npx convex env set OPENROUTER_API_KEY=your-openrouter-key
 2. Configure the Issuer URL in Convex auth config
 3. Add the publishable key to `.env.local`
 
+### AI Model Configuration
+
+You must configure the AI model before using the chat assistant. After starting the application, navigate to the Settings page (`/settings`) and configure the OpenRouter AI model that will be used for chat responses. Enter the model identifier in the "Model Name" field and click "Save".
+
+![AI Model Configuration Settings](pippaos-itsm-2.png)
+
+**Tested Models:**
+
+The following OpenRouter models have been tested and work correctly:
+
+- `anthropic/claude-haiku-4.5`
+- `google/gemini-2.5-flash-preview-09-2025`
+
+You can use any OpenRouter model identifier, but make sure to test it before using it in production.
+
 ### Running the Application
 
 #### Option 1: Local Development

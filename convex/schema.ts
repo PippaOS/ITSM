@@ -84,4 +84,11 @@ export default defineSchema({
   })
     .index('by_ticket_id', ['ticketId'])
     .index('by_machine_id', ['machineId']),
+
+  appConfig: defineTable({
+    key: v.string(),
+    value: v.string(),
+    updatedAt: v.number(),
+    updatedBy: v.optional(v.id('users')),
+  }).index('by_key', ['key']),
 });

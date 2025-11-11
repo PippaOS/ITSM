@@ -19,6 +19,7 @@ import type * as agents_tools_machines from "../agents/tools/machines.js";
 import type * as agents_tools_notes from "../agents/tools/notes.js";
 import type * as agents_tools_searchUsers from "../agents/tools/searchUsers.js";
 import type * as agents_tools_tickets from "../agents/tools/tickets.js";
+import type * as appConfig from "../appConfig.js";
 import type * as chat from "../chat.js";
 import type * as entities from "../entities.js";
 import type * as machines from "../machines.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   "agents/tools/notes": typeof agents_tools_notes;
   "agents/tools/searchUsers": typeof agents_tools_searchUsers;
   "agents/tools/tickets": typeof agents_tools_tickets;
+  appConfig: typeof appConfig;
   chat: typeof chat;
   entities: typeof entities;
   machines: typeof machines;

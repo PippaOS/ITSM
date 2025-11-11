@@ -21,6 +21,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { UserButton } from '@clerk/clerk-react';
 import type { ReactNode } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -106,6 +107,11 @@ export function Layout({ children }: LayoutProps) {
       text: 'Tickets',
       icon: <SupportAgentIcon />,
       path: '/tickets',
+    },
+    {
+      text: 'Settings',
+      icon: <SettingsIcon />,
+      path: '/settings',
     },
   ];
 
