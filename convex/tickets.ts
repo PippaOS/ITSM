@@ -32,6 +32,7 @@ export const listTickets = query({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      updatedTime: v.number(),
     })
   ),
   handler: async ctx => {
@@ -64,6 +65,7 @@ export const listTickets = query({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        updatedTime: ticket.updatedTime,
       });
     }
 
@@ -95,6 +97,7 @@ export const listTicketsCreatedByCurrentUser = query({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      updatedTime: v.number(),
     })
   ),
   handler: async ctx => {
@@ -131,6 +134,7 @@ export const listTicketsCreatedByCurrentUser = query({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        updatedTime: ticket.updatedTime,
       });
     }
 
@@ -162,6 +166,7 @@ export const listTicketsAssignedToCurrentUser = query({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      updatedTime: v.number(),
     })
   ),
   handler: async ctx => {
@@ -198,6 +203,7 @@ export const listTicketsAssignedToCurrentUser = query({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        updatedTime: ticket.updatedTime,
       });
     }
 
@@ -229,6 +235,7 @@ export const listTicketsByMachine = query({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      updatedTime: v.number(),
     })
   ),
   handler: async (ctx, args) => {
@@ -267,6 +274,7 @@ export const listTicketsByMachine = query({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        updatedTime: ticket.updatedTime,
       });
     }
 
@@ -302,6 +310,7 @@ export const getTicket = query({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      updatedTime: v.number(),
     })
   ),
   handler: async (ctx, args) => {
@@ -333,6 +342,7 @@ export const getTicket = query({
       assignedTo: ticket.assignedTo,
       assignedToName: assignedToUser?.name,
       assignedToEmail: assignedToUser?.email,
+      updatedTime: ticket.updatedTime,
     };
   },
 });
@@ -372,12 +382,14 @@ export const createTicket = mutation({
     }
 
     // Create the ticket
+    const now = Date.now();
     const ticketId = await ctx.db.insert('tickets', {
       userId,
       name: args.name.trim(),
       description: args.description.trim(),
       status: args.status,
       assignedTo: args.assignedTo,
+      updatedTime: now,
     });
 
     // Create ticket-machine relationships if machines are provided
@@ -430,7 +442,10 @@ export const updateTicket = mutation({
       description?: string;
       status?: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
       assignedTo?: Id<'users'>;
-    } = {};
+      updatedTime: number;
+    } = {
+      updatedTime: Date.now(),
+    };
 
     if (args.name !== undefined) {
       updates.name = args.name.trim();
@@ -496,12 +511,14 @@ export const createTicketForUser = internalMutation({
     }
 
     // Create the ticket
+    const now = Date.now();
     const ticketId = await ctx.db.insert('tickets', {
       userId: args.userId,
       name: args.name.trim(),
       description: args.description.trim(),
       status: args.status,
       assignedTo: args.assignedTo,
+      updatedTime: now,
     });
 
     // Create ticket-machine relationships if machines are provided
@@ -544,6 +561,7 @@ export const listTicketsAssignedToUser = internalQuery({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      updatedTime: v.number(),
     })
   ),
   handler: async (ctx, args) => {
@@ -581,6 +599,7 @@ export const listTicketsAssignedToUser = internalQuery({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        updatedTime: ticket.updatedTime,
       });
     }
 
@@ -614,6 +633,7 @@ export const listTicketsCreatedByUser = internalQuery({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      updatedTime: v.number(),
     })
   ),
   handler: async (ctx, args) => {
@@ -651,6 +671,7 @@ export const listTicketsCreatedByUser = internalQuery({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        updatedTime: ticket.updatedTime,
       });
     }
 
@@ -746,6 +767,7 @@ export const getTicketById = internalQuery({
       assignedTo: ticket.assignedTo,
       assignedToName: assignedToUser?.name,
       assignedToEmail: assignedToUser?.email,
+      updatedTime: ticket.updatedTime,
       notes: enrichedNotes,
     };
   },
@@ -941,7 +963,10 @@ export const updateTicketForUser = internalMutation({
       description?: string;
       status?: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
       assignedTo?: Id<'users'>;
-    } = {};
+      updatedTime: number;
+    } = {
+      updatedTime: Date.now(),
+    };
 
     if (args.name !== undefined) {
       updates.name = args.name.trim();
@@ -971,5 +996,28 @@ export const updateTicketForUser = internalMutation({
     await ctx.db.patch(args.ticketId, updates);
 
     return args.ticketId;
+  },
+});
+
+/**
+ * Helper internal mutation to update a ticket's updatedTime.
+ * Called when related entities (notes, tags) are modified.
+ */
+export const updateTicketTimestamp = internalMutation({
+  args: {
+    ticketId: v.id('tickets'),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const ticket = await ctx.db.get(args.ticketId);
+    if (!ticket) {
+      throw new Error('Ticket not found');
+    }
+
+    await ctx.db.patch(args.ticketId, {
+      updatedTime: Date.now(),
+    });
+
+    return null;
   },
 });

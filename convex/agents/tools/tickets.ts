@@ -27,6 +27,7 @@ export const getMyAssignedTickets = createTool({
       assignedTo?: string;
       assignedToName?: string;
       assignedToEmail?: string;
+      updatedTime: string;
     }>
   > => {
     const { userId } = await resolveUserId(ctx, {
@@ -70,6 +71,7 @@ export const getMyCreatedTickets = createTool({
       assignedTo?: string;
       assignedToName?: string;
       assignedToEmail?: string;
+      updatedTime: string;
     }>
   > => {
     const { userId } = await resolveUserId(ctx, {
@@ -326,6 +328,7 @@ export const getTicketById = createTool({
     assignedTo?: string;
     assignedToName?: string;
     assignedToEmail?: string;
+    updatedTime: string;
     notes: Array<{
       _id: string;
       _creationTime: string;

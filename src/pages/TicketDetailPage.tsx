@@ -510,6 +510,15 @@ export default function TicketDetailPage() {
                   {new Date(ticket._creationTime).toLocaleString()}
                 </Typography>
               </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Updated
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {new Date(ticket.updatedTime).toLocaleString()}
+                </Typography>
+              </Grid>
             </Grid>
           </Paper>
 

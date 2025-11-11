@@ -5,7 +5,7 @@ import {
   internalQuery,
 } from './_generated/server';
 import { v } from 'convex/values';
-import { api } from './_generated/api';
+import { api, internal } from './_generated/api';
 import type { Id } from './_generated/dataModel';
 
 /**
@@ -27,12 +27,21 @@ export const createNote = mutation({
     // Get or create the current user
     const userId: Id<'users'> = await ctx.runMutation(api.users.store, {});
 
-    return await ctx.db.insert('notes', {
+    const noteId = await ctx.db.insert('notes', {
       entityTable: args.entityTable,
       entityId: args.entityId,
       content: args.content,
       createdBy: userId,
     });
+
+    // Update ticket timestamp if this note is for a ticket
+    if (args.entityTable === 'tickets') {
+      await ctx.runMutation(internal.tickets.updateTicketTimestamp, {
+        ticketId: args.entityId as Id<'tickets'>,
+      });
+    }
+
+    return noteId;
   },
 });
 
@@ -68,6 +77,13 @@ export const updateNote = mutation({
     await ctx.db.patch(args.noteId, {
       content: args.content,
     });
+
+    // Update ticket timestamp if this note is for a ticket
+    if (note.entityTable === 'tickets') {
+      await ctx.runMutation(internal.tickets.updateTicketTimestamp, {
+        ticketId: note.entityId as Id<'tickets'>,
+      });
+    }
 
     return args.noteId;
   },
@@ -239,6 +255,13 @@ export const createNoteForEntity = internalMutation({
       content: args.content,
       createdBy: args.userId,
     });
+
+    // Update ticket timestamp if this note is for a ticket
+    if (args.entityTable === 'tickets') {
+      await ctx.runMutation(internal.tickets.updateTicketTimestamp, {
+        ticketId: args.entityId as Id<'tickets'>,
+      });
+    }
 
     return noteId;
   },

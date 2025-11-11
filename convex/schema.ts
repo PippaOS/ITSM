@@ -73,6 +73,7 @@ export default defineSchema({
       v.literal('Awaiting')
     ),
     assignedTo: v.optional(v.id('users')),
+    updatedTime: v.number(),
   })
     .index('by_user_id', ['userId'])
     .index('by_status', ['status'])

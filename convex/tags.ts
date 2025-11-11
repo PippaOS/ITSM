@@ -1,6 +1,6 @@
 import { mutation, query } from './_generated/server';
 import { v } from 'convex/values';
-import { api } from './_generated/api';
+import { api, internal } from './_generated/api';
 import type { Id } from './_generated/dataModel';
 
 /**
@@ -23,13 +23,22 @@ export const createTag = mutation({
     // Get or create the current user
     const userId: Id<'users'> = await ctx.runMutation(api.users.store, {});
 
-    return await ctx.db.insert('tags', {
+    const tagId = await ctx.db.insert('tags', {
       entityTable: args.entityTable,
       entityId: args.entityId,
       key: args.key,
       value: args.value,
       createdBy: userId,
     });
+
+    // Update ticket timestamp if this tag is for a ticket
+    if (args.entityTable === 'tickets') {
+      await ctx.runMutation(internal.tickets.updateTicketTimestamp, {
+        ticketId: args.entityId as Id<'tickets'>,
+      });
+    }
+
+    return tagId;
   },
 });
 
@@ -110,6 +119,14 @@ export const updateTag = mutation({
       key: args.key,
       value: args.value,
     });
+
+    // Update ticket timestamp if this tag is for a ticket
+    if (tag.entityTable === 'tickets') {
+      await ctx.runMutation(internal.tickets.updateTicketTimestamp, {
+        ticketId: tag.entityId as Id<'tickets'>,
+      });
+    }
+
     return null;
   },
 });
@@ -134,6 +151,14 @@ export const deleteTag = mutation({
     }
 
     await ctx.db.delete(args.tagId);
+
+    // Update ticket timestamp if this tag was for a ticket
+    if (tag.entityTable === 'tickets') {
+      await ctx.runMutation(internal.tickets.updateTicketTimestamp, {
+        ticketId: tag.entityId as Id<'tickets'>,
+      });
+    }
+
     return null;
   },
 });

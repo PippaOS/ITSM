@@ -71,6 +71,15 @@ export default function TicketsPage() {
           return new Date(value).toLocaleString();
         },
       },
+      {
+        field: 'updatedTime',
+        headerName: 'Updated',
+        width: 180,
+        valueFormatter: (value?: number) => {
+          if (value == null) return '';
+          return new Date(value).toLocaleString();
+        },
+      },
     ],
     []
   );
