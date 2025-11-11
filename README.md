@@ -4,6 +4,10 @@
 
 IT Service Management system built with Convex, React 19, and Material-UI.
 
+Here is a demo of the app in action:
+
+https://www.youtube.com/watch?v=6njPEsBIB_o
+
 ## Overview
 
 This application provides IT service management functionality including asset tracking, ticket management, and an AI-powered assistant for handling common ITSM tasks. This is built fully using Cursor, mainly the Composer 1, Sonnet 4.5 and GPT-5 models. I want to see how far I can take an actual product with AI based coding. This is still a work in progress.
