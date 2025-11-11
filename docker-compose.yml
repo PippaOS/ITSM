@@ -1,0 +1,14 @@
+services:
+  frontend:
+    build: .
+    ports:
+      - '5173:5173'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    # Vite automatically reads .env.local from the filesystem
+    # Since we mount .:/app, Vite will find .env.local in /app/.env.local
+    # No need to explicitly pass env vars - Vite reads them from the file
+    environment:
+      - VITE_HOST=0.0.0.0
+    command: npm run dev -- --host 0.0.0.0
