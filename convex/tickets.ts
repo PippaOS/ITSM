@@ -706,6 +706,7 @@ export const getTicketById = internalQuery({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      updatedTime: v.number(),
       notes: v.array(
         v.object({
           _id: v.id('notes'),
