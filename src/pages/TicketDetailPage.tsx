@@ -19,7 +19,7 @@ import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Tooltip from '@mui/material/Tooltip';
 import { DataGrid } from '@mui/x-data-grid';
-import type { GridColDef } from '@mui/x-data-grid';
+import type { GridColDef, GridRowParams } from '@mui/x-data-grid';
 import { alpha, useTheme } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
@@ -192,6 +192,10 @@ export default function TicketDetailPage() {
     },
     [removeMachineFromTicket, ticketId]
   );
+
+  const handleRowClick = (params: GridRowParams) => {
+    navigate(`/machines/${params.id}`);
+  };
 
   const getStatusColor = (
     status: string
@@ -545,6 +549,12 @@ export default function TicketDetailPage() {
               pageSizeOptions={[5, 10, 25]}
               disableRowSelectionOnClick
               loading={ticketMachines === undefined}
+              onRowClick={handleRowClick}
+              sx={{
+                '& .MuiDataGrid-row': {
+                  cursor: 'pointer',
+                },
+              }}
             />
           </Box>
         </Paper>
