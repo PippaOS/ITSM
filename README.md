@@ -108,6 +108,14 @@ The following OpenRouter models have been tested and work correctly:
 
 You can use any OpenRouter model identifier, but make sure to test it before using it in production.
 
+### Privacy Settings
+
+The application includes a Zero Data Retention (ZDR) setting that allows you to control how your data is handled by OpenRouter. When enabled, requests will only be routed to endpoints that have a Zero Data Retention policy, ensuring your data is not stored by the provider.
+
+![Zero Data Retention Settings](pippaos-itsm-3.png)
+
+You can configure this setting on the Settings page (`/settings`). For more information about Zero Data Retention, see the [OpenRouter ZDR documentation](https://openrouter.ai/docs/features/zdr).
+
 ### Running the Application
 
 #### Option 1: Local Development

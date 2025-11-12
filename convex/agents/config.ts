@@ -39,7 +39,31 @@ export async function getLanguageModel(
     );
   }
 
-  return openrouter.chat(configValue) as LanguageModelV2;
+  // Get the ZDR setting
+  const zdrValue: string | null = await ctx.runQuery(
+    internal.appConfig.getConfigInternal as FunctionReference<
+      'query',
+      'internal',
+      { key: string },
+      string | null
+    >,
+    { key: 'openrouter_zdr' }
+  );
+
+  // Create model with ZDR setting if enabled
+  // Note: OpenRouter expects { provider: { zdr: true } } but the TypeScript types don't include it yet
+  // Using type assertion to bypass the type check
+  const modelOptions =
+    zdrValue === 'true'
+      ? ({
+          provider: {
+            zdr: true,
+          },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any)
+      : undefined;
+
+  return openrouter.chat(configValue, modelOptions) as LanguageModelV2;
 }
 
 /**
