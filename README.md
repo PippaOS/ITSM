@@ -27,7 +27,7 @@ This application provides IT service management functionality including asset tr
 - Notes attached to entities (machines, tickets, users)
 - Custom tagging system for entity metadata
 - AI chat assistant with function calling capabilities
-- Multi-user authentication and authorization
+- Multi-user authentication
 - Light and dark mode support
 - Entity ID detection with interactive hover tooltips
 
@@ -60,12 +60,7 @@ The chat interface automatically detects Convex document IDs in messages and mak
 - **Quick Navigation**: Clicking on an entity ID navigates directly to the entity's detail page, allowing you to view full information or perform actions
 - **Copy to Clipboard**: Clicking the ID in the tooltip copies it to your clipboard for easy sharing
 
-**Benefits:**
-
-- **Context Without Interruption**: View entity details instantly without navigating away from your conversation
-- **Seamless Workflow**: Jump directly from chat messages to entity detail pages with a single click
-- **Reduced Lookup Time**: No need to manually search for entities by ID or remember which entity an ID refers to
-- **Enhanced Productivity**: Quickly verify information or take action on entities mentioned in AI responses
+This feature provides instant context without leaving the conversation, enables seamless navigation to entity detail pages, and eliminates the need for manual ID lookups, significantly improving productivity when working with entities mentioned in chat messages.
 
 ![Entity ID Tooltip Example](pippaos-itsm-4.png)
 
@@ -73,9 +68,9 @@ The chat interface automatically detects Convex document IDs in messages and mak
 
 ### Prerequisites
 
-- Node.js (version specified in package.json)
+- Node.js
 - npm
-- Docker (for containerized deployment)
+- Docker (for containerized development environment)
 - Convex account
 - Clerk account
 - OpenRouter API key
@@ -180,4 +175,4 @@ AGPL-3.0
 
 ## Contact Me
 
-pippachat@.pm.me
+pippachat@pm.me
