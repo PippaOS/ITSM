@@ -44,6 +44,31 @@ The AI assistant can perform the following operations through function calling:
 - Retrieve notes for any entity
 - Get current date/time for temporal queries
 
+## Interactive Entity ID Tooltips
+
+The chat interface automatically detects Convex document IDs in messages and makes them interactive. When the AI assistant references a ticket, machine, user, note, or tag by its ID, you can hover over the ID to see detailed information about that entity without leaving the conversation.
+
+**How it works:**
+
+- **Automatic Detection**: Convex document IDs (32-character alphanumeric strings) are automatically detected in chat messages and rendered as clickable, underlined links
+- **Hover Tooltips**: Hovering over an entity ID displays a tooltip with formatted details:
+  - **Tickets**: Name, status, and description
+  - **Machines**: RAM, storage capacity, storage type, status, and assignment information
+  - **Users**: Name and email address
+  - **Notes**: Note content
+  - **Tags**: Key-value pair information
+- **Quick Navigation**: Clicking on an entity ID navigates directly to the entity's detail page, allowing you to view full information or perform actions
+- **Copy to Clipboard**: Clicking the ID in the tooltip copies it to your clipboard for easy sharing
+
+**Benefits:**
+
+- **Context Without Interruption**: View entity details instantly without navigating away from your conversation
+- **Seamless Workflow**: Jump directly from chat messages to entity detail pages with a single click
+- **Reduced Lookup Time**: No need to manually search for entities by ID or remember which entity an ID refers to
+- **Enhanced Productivity**: Quickly verify information or take action on entities mentioned in AI responses
+
+![Entity ID Tooltip Example](pippaos-itsm-4.png)
+
 ## Development Setup
 
 ### Prerequisites
