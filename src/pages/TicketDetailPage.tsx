@@ -465,7 +465,7 @@ export default function TicketDetailPage() {
               },
             }}
           >
-            Add Machine
+            Add machine
           </Button>
         )}
       </Box>
@@ -754,7 +754,7 @@ export default function TicketDetailPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Add Machine to Ticket</DialogTitle>
+        <DialogTitle>Add machine to ticket</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 2 }}>
             <Autocomplete

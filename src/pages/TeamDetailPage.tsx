@@ -253,7 +253,7 @@ export default function TeamDetailPage() {
               },
             }}
           >
-            Add Member
+            Add member
           </Button>
         )}
       </Box>

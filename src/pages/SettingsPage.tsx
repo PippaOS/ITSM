@@ -150,15 +150,16 @@ export default function SettingsPage() {
             }}
           >
             <Typography variant="subtitle2" color="text.secondary">
-              Available Models
+              Available models
             </Typography>
             <Button
               startIcon={<AddIcon />}
               onClick={handleOpenAddDialog}
               disabled={isSaving}
               size="small"
+              sx={{ textTransform: 'none' }}
             >
-              Add Model
+              Add model
             </Button>
           </Box>
 
@@ -173,7 +174,7 @@ export default function SettingsPage() {
               }}
             >
               <Typography variant="body2" color="text.secondary">
-                No models configured. Click "Add Model" to get started.
+                No models configured. Click "Add model" to get started.
               </Typography>
             </Box>
           ) : (
