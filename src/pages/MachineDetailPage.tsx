@@ -243,6 +243,14 @@ export default function MachineDetailPage() {
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="subtitle2" color="text.secondary">
+                Serial Number
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 2 }}>
+                {machine.serialNumber || '—'}
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
                 Type
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>

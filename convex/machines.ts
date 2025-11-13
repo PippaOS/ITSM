@@ -18,6 +18,7 @@ export const listMachines = query({
       name: v.string(),
       make: v.string(),
       model: v.string(),
+      serialNumber: v.optional(v.string()),
       type: v.union(
         v.literal('Laptop'),
         v.literal('Desktop'),
@@ -76,6 +77,7 @@ export const listMachinesByAssignedUser = query({
       name: v.string(),
       make: v.string(),
       model: v.string(),
+      serialNumber: v.optional(v.string()),
       type: v.union(
         v.literal('Laptop'),
         v.literal('Desktop'),
@@ -150,6 +152,7 @@ export const listMachinesByUserId = internalQuery({
       name: v.string(),
       make: v.string(),
       model: v.string(),
+      serialNumber: v.optional(v.string()),
       type: v.union(
         v.literal('Laptop'),
         v.literal('Desktop'),
@@ -215,6 +218,7 @@ export const listAllMachinesForAdmin = internalQuery({
       name: v.string(),
       make: v.string(),
       model: v.string(),
+      serialNumber: v.optional(v.string()),
       type: v.union(
         v.literal('Laptop'),
         v.literal('Desktop'),
@@ -271,6 +275,7 @@ export const searchMachines = internalQuery({
       name: v.string(),
       make: v.string(),
       model: v.string(),
+      serialNumber: v.optional(v.string()),
       type: v.union(
         v.literal('Laptop'),
         v.literal('Desktop'),
@@ -347,6 +352,7 @@ export const createMachine = mutation({
     name: v.string(),
     make: v.string(),
     model: v.string(),
+    serialNumber: v.optional(v.string()),
     type: v.union(
       v.literal('Laptop'),
       v.literal('Desktop'),
@@ -380,6 +386,7 @@ export const createMachine = mutation({
       name: args.name,
       make: args.make,
       model: args.model,
+      serialNumber: args.serialNumber,
       type: args.type,
       ramGb: args.ramGb,
       storageCapacityGb: args.storageCapacityGb,
@@ -401,6 +408,7 @@ export const createMachineInternal = internalMutation({
     name: v.string(),
     make: v.string(),
     model: v.string(),
+    serialNumber: v.optional(v.string()),
     type: v.union(
       v.literal('Laptop'),
       v.literal('Desktop'),
@@ -429,6 +437,7 @@ export const createMachineInternal = internalMutation({
       name: args.name,
       make: args.make,
       model: args.model,
+      serialNumber: args.serialNumber,
       type: args.type,
       ramGb: args.ramGb,
       storageCapacityGb: args.storageCapacityGb,
@@ -450,6 +459,7 @@ export const updateMachine = mutation({
     name: v.string(),
     make: v.string(),
     model: v.string(),
+    serialNumber: v.optional(v.string()),
     type: v.union(
       v.literal('Laptop'),
       v.literal('Desktop'),
@@ -488,6 +498,7 @@ export const updateMachine = mutation({
       name: args.name,
       make: args.make,
       model: args.model,
+      serialNumber: args.serialNumber,
       type: args.type,
       ramGb: args.ramGb,
       storageCapacityGb: args.storageCapacityGb,
@@ -515,6 +526,7 @@ export const getMachineWithDetails = query({
         name: v.string(),
         make: v.string(),
         model: v.string(),
+        serialNumber: v.optional(v.string()),
         type: v.union(
           v.literal('Laptop'),
           v.literal('Desktop'),

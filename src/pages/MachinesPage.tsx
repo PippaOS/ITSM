@@ -28,6 +28,14 @@ const columns: GridColDef[] = [
     width: 150,
   },
   {
+    field: 'serialNumber',
+    headerName: 'Serial Number',
+    width: 150,
+    valueFormatter: (value?: string) => {
+      return value || '—';
+    },
+  },
+  {
     field: 'type',
     headerName: 'Type',
     width: 120,

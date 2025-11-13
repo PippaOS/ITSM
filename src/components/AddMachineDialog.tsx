@@ -24,6 +24,7 @@ type CreateMachineArgs = {
   name: string;
   make: string;
   model: string;
+  serialNumber?: string;
   type: 'Laptop' | 'Desktop' | 'Server';
   ramGb: number;
   storageCapacityGb: number;
@@ -60,6 +61,7 @@ export default function AddMachineDialog({
     name: '',
     make: '',
     model: '',
+    serialNumber: '',
     type: 'Laptop' as 'Laptop' | 'Desktop' | 'Server',
     ramGb: '',
     storageCapacityGb: '',
@@ -85,6 +87,7 @@ export default function AddMachineDialog({
         name: '',
         make: '',
         model: '',
+        serialNumber: '',
         type: 'Laptop',
         ramGb: '',
         storageCapacityGb: '',
@@ -103,6 +106,7 @@ export default function AddMachineDialog({
       name: '',
       make: '',
       model: '',
+      serialNumber: '',
       type: 'Laptop',
       ramGb: '',
       storageCapacityGb: '',
@@ -162,6 +166,7 @@ export default function AddMachineDialog({
         name: formData.name.trim(),
         make: formData.make.trim(),
         model: formData.model.trim(),
+        serialNumber: formData.serialNumber.trim() || undefined,
         type: formData.type,
         ramGb,
         storageCapacityGb,
@@ -215,6 +220,17 @@ export default function AddMachineDialog({
                 onChange={handleChange('model')}
                 disabled={isSubmitting}
                 required
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                label="Serial Number"
+                fullWidth
+                variant="standard"
+                value={formData.serialNumber}
+                onChange={handleChange('serialNumber')}
+                disabled={isSubmitting}
+                helperText="Optional"
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>

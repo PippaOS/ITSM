@@ -9,6 +9,7 @@ export function serializeMachine(machine: {
   name: unknown;
   make: unknown;
   model: unknown;
+  serialNumber?: unknown;
   type: unknown;
   ramGb: unknown;
   storageCapacityGb: unknown;
@@ -31,6 +32,7 @@ export function serializeMachine(machine: {
   name: string;
   make: string;
   model: string;
+  serialNumber?: string;
   type: 'Laptop' | 'Desktop' | 'Server';
   ramGb: number;
   storageCapacityGb: number;
@@ -54,6 +56,9 @@ export function serializeMachine(machine: {
     name: String(machine.name),
     make: String(machine.make),
     model: String(machine.model),
+    serialNumber: machine.serialNumber
+      ? String(machine.serialNumber)
+      : undefined,
     type: machine.type as 'Laptop' | 'Desktop' | 'Server',
     ramGb: Number(machine.ramGb),
     storageCapacityGb: Number(machine.storageCapacityGb),

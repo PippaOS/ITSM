@@ -16,6 +16,7 @@ export default defineSchema({
     name: v.string(),
     make: v.string(),
     model: v.string(),
+    serialNumber: v.optional(v.string()),
     type: v.union(
       v.literal('Laptop'),
       v.literal('Desktop'),

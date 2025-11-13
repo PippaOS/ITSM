@@ -11,6 +11,7 @@ import type { Id } from '../../_generated/dataModel';
  */
 const MachineFieldEnum = z.enum([
   '_creationTime',
+  'serialNumber',
   'type',
   'ramGb',
   'storageCapacityGb',
@@ -50,7 +51,7 @@ export const searchMachines = createTool({
       .array(MachineFieldEnum)
       .optional()
       .describe(
-        'Optional array of additional fields to include in the response. Available fields: _creationTime, type, ramGb, storageCapacityGb, storageType, graphicsCardName, processorName, assignedToUserId, assignedToUserEmail, status. Fields name, make, model, and _id are always included.'
+        'Optional array of additional fields to include in the response. Available fields: _creationTime, serialNumber, type, ramGb, storageCapacityGb, storageType, graphicsCardName, processorName, assignedToUserId, assignedToUserEmail, status. Fields name, make, model, and _id are always included.'
       ),
   }),
   handler: async (ctx, args): Promise<Array<Record<string, unknown>>> => {
@@ -91,6 +92,9 @@ export const searchMachines = createTool({
       // Add selected optional fields
       if (selectedFields.has('_creationTime')) {
         filtered._creationTime = machine._creationTime;
+      }
+      if (selectedFields.has('serialNumber')) {
+        filtered.serialNumber = machine.serialNumber;
       }
       if (selectedFields.has('type')) {
         filtered.type = machine.type;
