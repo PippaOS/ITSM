@@ -26,7 +26,7 @@
     "@mui/x-data-grid": "^8.16.0",
     "@openrouter/ai-sdk-provider": "^1.2.0",
     "ai": "^5.0.87",
-    "convex": "^1.28.2",
+    "convex": "^1.29.0",
     "convex-helpers": "^0.1.104",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
