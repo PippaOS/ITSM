@@ -1,18 +1,15 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridRowsProp, GridRowParams } from '@mui/x-data-grid';
-import { useQuery } from 'convex/react';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useQuery, useMutation } from 'convex/react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../convex/_generated/api';
-import { alpha, useTheme } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
+import AddTeamDialog from '../components/AddTeamDialog';
 
 const columns: GridColDef[] = [
   {
@@ -22,20 +19,10 @@ const columns: GridColDef[] = [
     flex: 1,
   },
   {
-    field: 'email',
-    headerName: 'Email',
-    width: 250,
+    field: 'description',
+    headerName: 'Description',
+    width: 300,
     flex: 1,
-  },
-  {
-    field: 'externalId',
-    headerName: 'External ID',
-    width: 200,
-  },
-  {
-    field: 'tokenIdentifier',
-    headerName: 'Token Identifier',
-    width: 200,
   },
   {
     field: '_creationTime',
@@ -48,20 +35,26 @@ const columns: GridColDef[] = [
   },
 ];
 
-export default function UsersPage() {
+export default function TeamsPage() {
   const theme = useTheme();
   const navigate = useNavigate();
-  const users = useQuery(api.users.listUsers);
+  const teams = useQuery(api.teams.listTeams);
+  const createTeam = useMutation(api.teams.createTeam);
   const [open, setOpen] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // Convert users data to rows format expected by DataGrid
+  // Convert teams data to rows format expected by DataGrid
   const rows: GridRowsProp = React.useMemo(() => {
-    if (!users) return [];
-    return users.map(user => ({
-      id: user._id,
-      ...user,
+    if (!teams) return [];
+    return teams.map(team => ({
+      id: team._id,
+      ...team,
     }));
-  }, [users]);
+  }, [teams]);
+
+  const handleRowClick = (params: GridRowParams) => {
+    navigate(`/teams/${params.id}`);
+  };
 
   const handleOpen = () => {
     setOpen(true);
@@ -71,18 +64,36 @@ export default function UsersPage() {
     setOpen(false);
   };
 
+  const handleSubmit = async (args: Parameters<typeof createTeam>[0]) => {
+    setIsSubmitting(true);
+    try {
+      await createTeam(args);
+      handleClose();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <Box sx={{ p: 3 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: 'calc(100vh - 120px)',
+        width: '100%',
+      }}
+    >
       <Box
         sx={{
-          mb: 3,
+          p: 2,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          flexShrink: 0,
         }}
       >
         <Typography variant="h5" component="h1">
-          Users
+          Teams
         </Typography>
         <Button
           variant="outlined"
@@ -101,11 +112,10 @@ export default function UsersPage() {
             },
           }}
         >
-          New user
+          New team
         </Button>
       </Box>
-
-      <Box sx={{ height: 'calc(100vh - 200px)', width: '100%' }}>
+      <Box sx={{ flexGrow: 1, width: '100%', minHeight: 0 }}>
         <DataGrid
           rows={rows}
           columns={columns}
@@ -118,29 +128,21 @@ export default function UsersPage() {
             },
           }}
           pageSizeOptions={[10, 25, 50, 100]}
+          checkboxSelection
           disableRowSelectionOnClick
-          loading={users === undefined}
+          loading={teams === undefined}
           sx={{ width: '100%', height: '100%' }}
-          onRowClick={(params: GridRowParams) => {
-            navigate(`/users/${params.id}`);
-          }}
+          onRowClick={handleRowClick}
           paginationMode="client"
         />
       </Box>
 
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New User</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" sx={{ mt: 1 }}>
-            To add a new user, please go to the Clerk dashboard.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} variant="contained">
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AddTeamDialog
+        open={open}
+        onClose={handleClose}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+      />
     </Box>
   );
 }

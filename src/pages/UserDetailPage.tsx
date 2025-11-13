@@ -6,6 +6,14 @@ import Grid from '@mui/material/Grid';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
 import Tooltip from '@mui/material/Tooltip';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import { useTheme } from '@mui/material/styles';
 import { useQuery } from 'convex/react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -19,7 +27,9 @@ export default function UserDetailPage() {
   const navigate = useNavigate();
   const userId = id as Id<'users'>;
   const user = useQuery(api.users.getUser, { userId });
+  const userTeams = useQuery(api.teams.getTeamsForUser, { userId });
   const [copied, setCopied] = React.useState(false);
+  const [tabValue, setTabValue] = React.useState(0);
 
   const handleCopyId = async () => {
     try {
@@ -29,6 +39,10 @@ export default function UserDetailPage() {
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
     }
+  };
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
   };
 
   if (user === undefined) {
@@ -132,56 +146,129 @@ export default function UserDetailPage() {
         </Breadcrumbs>
       </Box>
 
-      <Paper sx={{ p: 3, mt: 2 }}>
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Name
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {user.name}
-            </Typography>
-          </Grid>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 3 }}>
+        <Tabs value={tabValue} onChange={handleTabChange}>
+          <Tab label="Details" sx={{ textTransform: 'none' }} />
+          <Tab label="Teams" sx={{ textTransform: 'none' }} />
+        </Tabs>
+      </Box>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Email
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {user.email || 'N/A'}
-            </Typography>
-          </Grid>
+      {tabValue === 0 && (
+        <>
+          <Paper sx={{ p: 3, mt: 2 }}>
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Name
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {user.name}
+                </Typography>
+              </Grid>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              External ID
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {user.externalId}
-            </Typography>
-          </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Email
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {user.email || 'N/A'}
+                </Typography>
+              </Grid>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Token Identifier
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {user.tokenIdentifier}
-            </Typography>
-          </Grid>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  External ID
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {user.externalId}
+                </Typography>
+              </Grid>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Created
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              {new Date(user._creationTime).toLocaleString()}
-            </Typography>
-          </Grid>
-        </Grid>
-      </Paper>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Token Identifier
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {user.tokenIdentifier}
+                </Typography>
+              </Grid>
 
-      <NotesAndTags entityTable="users" entityId={userId as string} />
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Created
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {new Date(user._creationTime).toLocaleString()}
+                </Typography>
+              </Grid>
+            </Grid>
+          </Paper>
+
+          <NotesAndTags entityTable="users" entityId={userId as string} />
+        </>
+      )}
+
+      {tabValue === 1 && (
+        <Box sx={{ mt: 2 }}>
+          {userTeams === undefined ? (
+            <Typography>Loading teams...</Typography>
+          ) : userTeams.length === 0 ? (
+            <Paper sx={{ p: 3, textAlign: 'center' }}>
+              <Typography color="text.secondary">
+                This user is not a member of any teams yet.
+              </Typography>
+            </Paper>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Team ID</TableCell>
+                    <TableCell>Created</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {userTeams.map(team => (
+                    <TableRow
+                      key={team._id}
+                      hover
+                      sx={{ cursor: 'pointer' }}
+                      onClick={() => navigate(`/teams/${team._id}`)}
+                    >
+                      <TableCell>{team.name}</TableCell>
+                      <TableCell>
+                        <Link
+                          component="button"
+                          variant="body2"
+                          onClick={e => {
+                            e.stopPropagation();
+                            navigate(`/teams/${team._id}`);
+                          }}
+                          sx={{
+                            textDecoration: 'underline',
+                            color: 'primary.main',
+                            cursor: 'pointer',
+                            border: 'none',
+                            background: 'none',
+                            padding: 0,
+                            font: 'inherit',
+                          }}
+                        >
+                          {team._id}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(team._creationTime).toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Box>
+      )}
     </Box>
   );
 }

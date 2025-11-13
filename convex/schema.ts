@@ -92,4 +92,16 @@ export default defineSchema({
     updatedAt: v.number(),
     updatedBy: v.optional(v.id('users')),
   }).index('by_key', ['key']),
+
+  teams: defineTable({
+    name: v.string(),
+    description: v.string(),
+  }),
+
+  teamMembers: defineTable({
+    teamId: v.id('teams'),
+    userId: v.id('users'),
+  })
+    .index('by_team_id', ['teamId'])
+    .index('by_user_id', ['userId']),
 });

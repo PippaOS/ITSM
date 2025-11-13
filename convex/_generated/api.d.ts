@@ -25,6 +25,7 @@ import type * as entities from "../entities.js";
 import type * as machines from "../machines.js";
 import type * as notes from "../notes.js";
 import type * as tags from "../tags.js";
+import type * as teams from "../teams.js";
 import type * as threads from "../threads.js";
 import type * as tickets from "../tickets.js";
 import type * as users from "../users.js";
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   machines: typeof machines;
   notes: typeof notes;
   tags: typeof tags;
+  teams: typeof teams;
   threads: typeof threads;
   tickets: typeof tickets;
   users: typeof users;
