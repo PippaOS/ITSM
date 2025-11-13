@@ -5,6 +5,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Link from '@mui/material/Link';
@@ -28,11 +29,11 @@ export default function SettingsPage() {
   const [models, setModels] = React.useState<string[]>([]);
   const [zdrEnabled, setZdrEnabled] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
-  const [saveSuccess, setSaveSuccess] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
   const [addDialogOpen, setAddDialogOpen] = React.useState(false);
   const [newModelInput, setNewModelInput] = React.useState('');
   const [newModelError, setNewModelError] = React.useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
 
   // Load current settings from config
   React.useEffect(() => {
@@ -62,7 +63,6 @@ export default function SettingsPage() {
     }
 
     setIsSaving(true);
-    setSaveSuccess(false);
     setSaveError(null);
 
     try {
@@ -71,8 +71,7 @@ export default function SettingsPage() {
         value: JSON.stringify(updatedModels),
       });
       setModels(updatedModels);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      setSnackbarOpen(true);
     } catch (error) {
       setSaveError(
         error instanceof Error ? error.message : 'Failed to save configuration'
@@ -134,12 +133,6 @@ export default function SettingsPage() {
           Configure the OpenRouter AI models available for chat responses. You
           can add multiple models and select which one to use in each chat.
         </Typography>
-
-        {saveSuccess && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            Configuration saved successfully!
-          </Alert>
-        )}
 
         {saveError && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -305,7 +298,6 @@ export default function SettingsPage() {
                 const newValue = e.target.checked;
                 setZdrEnabled(newValue);
                 setIsSaving(true);
-                setSaveSuccess(false);
                 setSaveError(null);
 
                 try {
@@ -313,8 +305,7 @@ export default function SettingsPage() {
                     key: 'openrouter_zdr',
                     value: newValue ? 'true' : 'false',
                   });
-                  setSaveSuccess(true);
-                  setTimeout(() => setSaveSuccess(false), 3000);
+                  setSnackbarOpen(true);
                 } catch (error) {
                   setSaveError(
                     error instanceof Error
@@ -358,6 +349,22 @@ export default function SettingsPage() {
           </Typography>
         )}
       </Paper>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          Configuration saved successfully!
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
