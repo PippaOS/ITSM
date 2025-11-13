@@ -8,7 +8,8 @@ import { ChatInterface } from '../components/chat/ChatInterface';
 
 export default function ChatPage() {
   const { threadId: threadIdParam } = useParams<{ threadId?: string }>();
-  const threadId = threadIdParam ?? null;
+  const isDraft = threadIdParam === 'new';
+  const threadId = isDraft ? null : (threadIdParam ?? null);
   const [prompt, setPrompt] = useState('');
   const navigate = useNavigate();
 
@@ -19,16 +20,25 @@ export default function ChatPage() {
     { initialNumItems: 50 }
   );
 
+  // Auto-navigate to first thread only if we're at /chats (no param at all)
   useEffect(() => {
-    if (!threadId && threads.results && threads.results.length > 0) {
+    if (
+      !threadIdParam &&
+      !isDraft &&
+      threads.results &&
+      threads.results.length > 0
+    ) {
       navigate(`/chats/${encodeURIComponent(threads.results[0]._id)}`, {
         replace: true,
       });
     }
-  }, [threadId, threads.results, navigate]);
+  }, [threadIdParam, isDraft, threads.results, navigate]);
 
   // Handle case where thread doesn't exist (was deleted)
   useEffect(() => {
+    // Skip if we're in draft mode
+    if (isDraft) return;
+
     // Only navigate if threads have loaded and we have a threadId
     if (threadId && threads.results !== undefined) {
       // Check if current thread exists in the list
@@ -49,7 +59,12 @@ export default function ChatPage() {
         }
       }
     }
-  }, [threadId, threads.results, navigate]);
+  }, [isDraft, threadId, threads.results, navigate]);
+
+  // Callback to update URL after thread is created from draft
+  const handleThreadCreated = (newThreadId: string) => {
+    navigate(`/chats/${encodeURIComponent(newThreadId)}`, { replace: true });
+  };
 
   return (
     <Box
@@ -65,11 +80,12 @@ export default function ChatPage() {
         py: { xs: 2, md: 4 },
       }}
     >
-      {threadId ? (
+      {threadId || isDraft ? (
         <ChatInterface
           threadId={threadId}
           prompt={prompt}
           setPrompt={setPrompt}
+          onThreadCreated={handleThreadCreated}
         />
       ) : (
         <ChatWelcome />

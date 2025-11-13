@@ -1,4 +1,4 @@
-import { components, internal } from './_generated/api';
+import { api, components, internal } from './_generated/api';
 import { action, internalAction, mutation, query } from './_generated/server';
 import {
   getThreadMetadata,
@@ -33,10 +33,20 @@ function extractTitleFromMessage(
 /**
  * Save a user message and kick off an async response.
  * This enables optimistic updates on the client.
+ * If threadId is not provided, creates a new thread first.
  */
 export const sendMessage = mutation({
-  args: { prompt: v.string(), threadId: v.string(), modelId: v.string() },
-  handler: async (ctx, { prompt, threadId, modelId }) => {
+  args: {
+    prompt: v.string(),
+    threadId: v.optional(v.string()),
+    modelId: v.string(),
+  },
+  returns: v.object({ threadId: v.string() }),
+  handler: async (ctx, { prompt, threadId: inputThreadId, modelId }) => {
+    // If no threadId provided, create a new thread
+    const threadId: string =
+      inputThreadId ?? (await ctx.runMutation(api.threads.createNewThread, {}));
+
     await authorizeThreadAccess(ctx, threadId);
 
     // Check if we should set the thread title from the first message
@@ -77,6 +87,8 @@ export const sendMessage = mutation({
       promptMessageId: messageId,
       modelId,
     });
+
+    return { threadId };
   },
 });
 

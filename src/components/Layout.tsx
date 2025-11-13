@@ -27,8 +27,6 @@ import { UserButton } from '@clerk/clerk-react';
 import type { ReactNode } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme as useAppTheme } from '../hooks/useTheme';
-import { useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
 
 const drawerWidth = 240;
 
@@ -58,16 +56,9 @@ export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Create new thread mutation
-  const createThread = useMutation(api.threads.createNewThread);
-
-  const handleCreateThread = async () => {
-    try {
-      const newThreadId = await createThread({});
-      navigate(`/chats/${encodeURIComponent(newThreadId)}`);
-    } catch (error) {
-      console.error('Error creating thread:', error);
-    }
+  const handleCreateThread = () => {
+    // Navigate to draft mode - thread will be created on first message
+    navigate('/chats/new');
   };
 
   const handleDrawerClose = () => {
