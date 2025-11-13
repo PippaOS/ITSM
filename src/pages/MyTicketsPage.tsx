@@ -193,7 +193,13 @@ export default function MyTicketsPage() {
           checkboxSelection
           disableRowSelectionOnClick
           loading={currentTickets === undefined}
-          sx={{ width: '100%', height: '100%' }}
+          sx={{
+            width: '100%',
+            height: '100%',
+            '& .MuiDataGrid-row': {
+              cursor: 'pointer',
+            },
+          }}
           onRowClick={handleRowClick}
         />
       </Box>

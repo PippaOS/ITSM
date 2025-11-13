@@ -187,7 +187,13 @@ export default function MachinesPage() {
           checkboxSelection
           disableRowSelectionOnClick
           loading={machines === undefined}
-          sx={{ width: '100%', height: '100%' }}
+          sx={{
+            width: '100%',
+            height: '100%',
+            '& .MuiDataGrid-row': {
+              cursor: 'pointer',
+            },
+          }}
           onRowClick={handleRowClick}
         />
       </Box>

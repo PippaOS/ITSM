@@ -120,7 +120,13 @@ export default function UsersPage() {
           pageSizeOptions={[10, 25, 50, 100]}
           disableRowSelectionOnClick
           loading={users === undefined}
-          sx={{ width: '100%', height: '100%' }}
+          sx={{
+            width: '100%',
+            height: '100%',
+            '& .MuiDataGrid-row': {
+              cursor: 'pointer',
+            },
+          }}
           onRowClick={(params: GridRowParams) => {
             navigate(`/users/${params.id}`);
           }}
