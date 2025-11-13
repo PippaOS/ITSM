@@ -163,17 +163,6 @@ docker compose up --build -d
 
 This will build and start the containerized application in detached mode. The application will be available at `http://localhost:5173`
 
-## Database Schema
-
-The application uses the following main tables:
-
-- `users` - User accounts with Clerk integration
-- `machines` - Hardware assets (laptops, desktops, servers)
-- `tickets` - Support tickets with status tracking
-- `ticketMachines` - Many-to-many relationship between tickets and machines
-- `notes` - Notes attached to any entity
-- `tags` - Key-value tags for entities
-
 ## License
 
 AGPL-3.0
