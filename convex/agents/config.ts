@@ -6,15 +6,17 @@ import { internal } from '../_generated/api';
 import type { FunctionReference, GenericActionCtx } from 'convex/server';
 
 /**
- * Get the language model configuration from the database.
- * This function should be called from actions to get the current model.
+ * Get the language model configuration.
+ * This function should be called from actions to get a specific model.
  *
+ * @param modelId The specific model ID to use
  * @throws Error if OPENROUTER_API_KEY is not set
- * @throws Error if no model is configured in the database
+ * @throws Error if modelId is not provided
  */
 export async function getLanguageModel(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ctx: GenericActionCtx<any>
+  ctx: GenericActionCtx<any>,
+  modelId: string
 ): Promise<LanguageModelV2> {
   if (!process.env.OPENROUTER_API_KEY) {
     throw new Error(
@@ -22,21 +24,8 @@ export async function getLanguageModel(
     );
   }
 
-  // Get the model from the database - no fallback
-  const configValue: string | null = await ctx.runQuery(
-    internal.appConfig.getConfigInternal as FunctionReference<
-      'query',
-      'internal',
-      { key: string },
-      string | null
-    >,
-    { key: 'openrouter_model' }
-  );
-
-  if (!configValue) {
-    throw new Error(
-      'No model configured. Please set the "openrouter_model" in app settings.'
-    );
+  if (!modelId) {
+    throw new Error('Model ID is required');
   }
 
   // Get the ZDR setting
@@ -63,7 +52,7 @@ export async function getLanguageModel(
         } as any)
       : undefined;
 
-  return openrouter.chat(configValue, modelOptions) as LanguageModelV2;
+  return openrouter.chat(modelId, modelOptions) as LanguageModelV2;
 }
 
 /**

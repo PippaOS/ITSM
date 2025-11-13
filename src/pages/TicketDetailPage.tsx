@@ -40,6 +40,7 @@ export default function TicketDetailPage() {
   const ticket = useQuery(api.tickets.getTicket, { ticketId });
   const users = useQuery(api.users.listUsers);
   const machines = useQuery(api.machines.listMachines);
+  const teams = useQuery(api.teams.listTeams);
   const ticketMachines = useQuery(api.tickets.getMachinesForTicket, {
     ticketId,
   });
@@ -59,10 +60,26 @@ export default function TicketDetailPage() {
     description: '',
     status: 'Open' as 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting',
     assignedTo: null as Id<'users'> | null,
+    teamId: null as Id<'teams'> | null,
   });
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
+
+  // Query team members when a team is selected in the edit dialog
+  const teamMembers = useQuery(
+    api.teams.listTeamMembers,
+    formData.teamId && editDialogOpen ? { teamId: formData.teamId } : 'skip'
+  );
+
+  // Filter users based on selected team in edit dialog
+  const availableUsers = React.useMemo(() => {
+    if (!formData.teamId || !teamMembers) {
+      return users || [];
+    }
+    const memberIds = new Set(teamMembers.map(m => m._id));
+    return (users || []).filter(u => memberIds.has(u._id));
+  }, [formData.teamId, teamMembers, users]);
 
   // Update form data when ticket loads
   React.useEffect(() => {
@@ -72,9 +89,25 @@ export default function TicketDetailPage() {
         description: ticket.description,
         status: ticket.status,
         assignedTo: ticket.assignedTo || null,
+        teamId: ticket.teamId || null,
       });
     }
   }, [ticket]);
+
+  // Clear assignedTo if team changes and the selected user is not in the new team
+  React.useEffect(() => {
+    if (
+      editDialogOpen &&
+      formData.teamId &&
+      formData.assignedTo &&
+      teamMembers
+    ) {
+      const memberIds = new Set(teamMembers.map(m => m._id));
+      if (!memberIds.has(formData.assignedTo)) {
+        setFormData(prev => ({ ...prev, assignedTo: null }));
+      }
+    }
+  }, [editDialogOpen, formData.teamId, formData.assignedTo, teamMembers]);
 
   const handleEdit = () => {
     if (ticket) {
@@ -83,6 +116,7 @@ export default function TicketDetailPage() {
         description: ticket.description,
         status: ticket.status,
         assignedTo: ticket.assignedTo || null,
+        teamId: ticket.teamId || null,
       });
       setEditDialogOpen(true);
       setError(null);
@@ -97,6 +131,7 @@ export default function TicketDetailPage() {
         description: ticket.description,
         status: ticket.status,
         assignedTo: ticket.assignedTo || null,
+        teamId: ticket.teamId || null,
       });
     }
     setError(null);
@@ -127,6 +162,7 @@ export default function TicketDetailPage() {
         description: formData.description.trim(),
         status: formData.status,
         assignedTo: formData.assignedTo,
+        teamId: formData.teamId,
       });
       setEditDialogOpen(false);
     } catch (err) {
@@ -508,6 +544,15 @@ export default function TicketDetailPage() {
 
               <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="subtitle2" color="text.secondary">
+                  Team
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {ticket.teamName || '—'}
+                </Typography>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
                   Created
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 2 }}>
@@ -596,6 +641,33 @@ export default function TicketDetailPage() {
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
+                <Autocomplete
+                  options={teams || []}
+                  getOptionLabel={option => option.name}
+                  value={
+                    formData.teamId
+                      ? teams?.find(t => t._id === formData.teamId) || null
+                      : null
+                  }
+                  onChange={(_, newValue) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      teamId: newValue?._id || null,
+                    }));
+                    setError(null);
+                  }}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      label="Team"
+                      variant="standard"
+                      helperText="Optional - limits assignee to team members"
+                      disabled={isSubmitting}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   select
                   label="Status"
@@ -619,7 +691,7 @@ export default function TicketDetailPage() {
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <Autocomplete
-                  options={users || []}
+                  options={availableUsers}
                   getOptionLabel={option =>
                     option.email
                       ? `${option.name} (${option.email})`
@@ -627,7 +699,9 @@ export default function TicketDetailPage() {
                   }
                   value={
                     formData.assignedTo
-                      ? users?.find(u => u._id === formData.assignedTo) || null
+                      ? availableUsers.find(
+                          u => u._id === formData.assignedTo
+                        ) || null
                       : null
                   }
                   onChange={(_, newValue) => {
@@ -642,7 +716,11 @@ export default function TicketDetailPage() {
                       {...params}
                       label="Assigned To"
                       variant="standard"
-                      helperText="Optional - leave empty to unassign"
+                      helperText={
+                        formData.teamId
+                          ? 'Optional - filtered by team'
+                          : 'Optional - leave empty to unassign'
+                      }
                       disabled={isSubmitting}
                     />
                   )}

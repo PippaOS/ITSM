@@ -5,6 +5,12 @@ import {
   query,
 } from './_generated/server';
 import { v } from 'convex/values';
+import type { Doc } from './_generated/dataModel';
+
+// Type for machine with optional assignedToUserEmail field
+type MachineWithUserEmail = Doc<'machines'> & {
+  assignedToUserEmail?: string;
+};
 
 /**
  * List all machines.
@@ -49,7 +55,7 @@ export const listMachines = query({
     }
 
     const machines = await ctx.db.query('machines').collect();
-    const result = [];
+    const result: Array<MachineWithUserEmail> = [];
     for (const machine of machines) {
       let assignedToUserEmail: string | undefined = undefined;
       if (machine.assignedToUserId) {
@@ -124,7 +130,7 @@ export const listMachinesByAssignedUser = query({
         q.eq('assignedToUserId', user._id)
       )
       .collect();
-    const result = [];
+    const result: Array<MachineWithUserEmail> = [];
     for (const machine of machines) {
       let assignedToUserEmail: string | undefined = undefined;
       if (machine.assignedToUserId) {
@@ -192,7 +198,7 @@ export const listMachinesByUserId = internalQuery({
       )
       .collect();
 
-    const result = [];
+    const result: Array<MachineWithUserEmail> = [];
     for (const machine of machines) {
       let assignedToUserEmail: string | undefined = undefined;
       if (machine.assignedToUserId) {
@@ -244,7 +250,7 @@ export const listAllMachinesForAdmin = internalQuery({
   ),
   handler: async ctx => {
     const machines = await ctx.db.query('machines').collect();
-    const result = [];
+    const result: Array<MachineWithUserEmail> = [];
     for (const machine of machines) {
       let assignedToUserEmail: string | undefined = undefined;
       if (machine.assignedToUserId) {
@@ -300,7 +306,7 @@ export const searchMachines = internalQuery({
     })
   ),
   handler: async (ctx, args) => {
-    let machines;
+    let machines: Array<Doc<'machines'>>;
 
     // If assignedToUserId is provided, use the index
     if (args.assignedToUserId !== undefined) {
@@ -327,7 +333,7 @@ export const searchMachines = internalQuery({
     machines = machines.slice(0, 10);
 
     // Add assignedToUserEmail for each machine
-    const result = [];
+    const result: Array<MachineWithUserEmail> = [];
     for (const machine of machines) {
       let assignedToUserEmail: string | undefined = undefined;
       if (machine.assignedToUserId) {
@@ -568,7 +574,11 @@ export const getMachineWithDetails = query({
     if (!machine) {
       return null;
     }
-    let assignedToUser = null;
+    let assignedToUser: {
+      _id: Doc<'users'>['_id'];
+      name: string;
+      email?: string;
+    } | null = null;
     if (machine.assignedToUserId) {
       const user = await ctx.db.get(machine.assignedToUserId);
       if (user) {

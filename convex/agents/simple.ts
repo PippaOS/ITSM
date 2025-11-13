@@ -21,14 +21,17 @@ IMPORTANT: When users ask about recent updates, changes, or when something happe
 };
 
 /**
- * Get an agent instance with the model from the database config.
- * This should be called from actions to use the dynamically configured model.
+ * Get an agent instance with a specific model.
+ * This should be called from actions to use a specific model.
+ *
+ * @param modelId The specific model ID to use
  */
 export async function getAgentWithDynamicModel(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ctx: GenericActionCtx<any>
+  ctx: GenericActionCtx<any>,
+  modelId: string
 ): Promise<Agent> {
-  const languageModel = await getLanguageModel(ctx);
+  const languageModel = await getLanguageModel(ctx, modelId);
   return new Agent(agentComponent, {
     ...baseAgentConfig,
     languageModel,

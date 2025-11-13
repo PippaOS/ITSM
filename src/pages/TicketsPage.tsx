@@ -63,6 +63,14 @@ export default function TicketsPage() {
         },
       },
       {
+        field: 'teamName',
+        headerName: 'Team',
+        width: 150,
+        valueFormatter: (value?: string) => {
+          return value || '—';
+        },
+      },
+      {
         field: '_creationTime',
         headerName: 'Created',
         width: 180,

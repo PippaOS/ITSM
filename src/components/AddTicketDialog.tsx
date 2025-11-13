@@ -10,6 +10,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Autocomplete from '@mui/material/Autocomplete';
 import Grid from '@mui/material/Grid';
 import type { Id } from '../../convex/_generated/dataModel';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 type User = {
   _id: Id<'users'>;
@@ -25,6 +27,7 @@ type CreateTicketArgs = {
   description: string;
   status: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
   assignedTo?: Id<'users'>;
+  teamId?: Id<'teams'>;
 };
 
 interface AddTicketDialogProps {
@@ -47,8 +50,26 @@ export default function AddTicketDialog({
     description: '',
     status: 'Open' as 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting',
     assignedTo: null as Id<'users'> | null,
+    teamId: null as Id<'teams'> | null,
   });
   const [error, setError] = React.useState<string | null>(null);
+
+  // Query teams and team members
+  const teams = useQuery(api.teams.listTeams);
+  const teamMembers = useQuery(
+    api.teams.listTeamMembers,
+    formData.teamId ? { teamId: formData.teamId } : 'skip'
+  );
+
+  // Filter users based on selected team
+  const availableUsers = React.useMemo(() => {
+    if (!formData.teamId || !teamMembers) {
+      return users || [];
+    }
+    // Only show team members when a team is selected
+    const memberIds = new Set(teamMembers.map(m => m._id));
+    return (users || []).filter(u => memberIds.has(u._id));
+  }, [formData.teamId, teamMembers, users]);
 
   // Reset form when dialog opens
   React.useEffect(() => {
@@ -58,10 +79,21 @@ export default function AddTicketDialog({
         description: '',
         status: 'Open',
         assignedTo: null,
+        teamId: null,
       });
       setError(null);
     }
   }, [open]);
+
+  // Clear assignedTo if team changes and the selected user is not in the new team
+  React.useEffect(() => {
+    if (formData.teamId && formData.assignedTo && teamMembers) {
+      const memberIds = new Set(teamMembers.map(m => m._id));
+      if (!memberIds.has(formData.assignedTo)) {
+        setFormData(prev => ({ ...prev, assignedTo: null }));
+      }
+    }
+  }, [formData.teamId, formData.assignedTo, teamMembers]);
 
   const handleClose = () => {
     setFormData({
@@ -69,6 +101,7 @@ export default function AddTicketDialog({
       description: '',
       status: 'Open',
       assignedTo: null,
+      teamId: null,
     });
     setError(null);
     onClose();
@@ -97,6 +130,7 @@ export default function AddTicketDialog({
         description: formData.description.trim(),
         status: formData.status,
         assignedTo: formData.assignedTo || undefined,
+        teamId: formData.teamId || undefined,
       });
       handleClose();
     } catch (err) {
@@ -136,6 +170,33 @@ export default function AddTicketDialog({
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
+              <Autocomplete
+                options={teams || []}
+                getOptionLabel={option => option.name}
+                value={
+                  formData.teamId
+                    ? teams?.find(t => t._id === formData.teamId) || null
+                    : null
+                }
+                onChange={(_, newValue) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    teamId: newValue?._id || null,
+                  }));
+                  setError(null);
+                }}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    label="Team"
+                    variant="standard"
+                    helperText="Optional - limits assignee to team members"
+                    disabled={isSubmitting}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 select
                 label="Status"
@@ -159,7 +220,7 @@ export default function AddTicketDialog({
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <Autocomplete
-                options={users || []}
+                options={availableUsers}
                 getOptionLabel={option =>
                   option.email
                     ? `${option.name} (${option.email})`
@@ -167,7 +228,8 @@ export default function AddTicketDialog({
                 }
                 value={
                   formData.assignedTo
-                    ? users?.find(u => u._id === formData.assignedTo) || null
+                    ? availableUsers.find(u => u._id === formData.assignedTo) ||
+                      null
                     : null
                 }
                 onChange={(_, newValue) => {
@@ -182,7 +244,11 @@ export default function AddTicketDialog({
                     {...params}
                     label="Assigned To"
                     variant="standard"
-                    helperText="Optional"
+                    helperText={
+                      formData.teamId
+                        ? 'Optional - filtered by team'
+                        : 'Optional'
+                    }
                     disabled={isSubmitting}
                   />
                 )}

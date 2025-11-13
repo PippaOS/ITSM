@@ -27,6 +27,8 @@ export const getMyAssignedTickets = createTool({
       assignedTo?: string;
       assignedToName?: string;
       assignedToEmail?: string;
+      teamId?: string;
+      teamName?: string;
       updatedTime: string;
     }>
   > => {
@@ -71,6 +73,8 @@ export const getMyCreatedTickets = createTool({
       assignedTo?: string;
       assignedToName?: string;
       assignedToEmail?: string;
+      teamId?: string;
+      teamName?: string;
       updatedTime: string;
     }>
   > => {
@@ -328,6 +332,8 @@ export const getTicketById = createTool({
     assignedTo?: string;
     assignedToName?: string;
     assignedToEmail?: string;
+    teamId?: string;
+    teamName?: string;
     updatedTime: string;
     notes: Array<{
       _id: string;

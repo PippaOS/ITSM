@@ -9,12 +9,6 @@ import { api } from '../../convex/_generated/api';
 
 const columns: GridColDef[] = [
   {
-    field: '_id',
-    headerName: 'Thread ID',
-    width: 200,
-    flex: 1,
-  },
-  {
     field: 'title',
     headerName: 'Title',
     width: 300,
@@ -24,13 +18,10 @@ const columns: GridColDef[] = [
     },
   },
   {
-    field: 'summary',
-    headerName: 'Summary',
-    width: 400,
-    flex: 2,
-    valueFormatter: (value?: string) => {
-      return value || '—';
-    },
+    field: '_id',
+    headerName: 'Chat ID',
+    width: 200,
+    flex: 1,
   },
   {
     field: 'status',

@@ -8,6 +8,16 @@ import Alert from '@mui/material/Alert';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Link from '@mui/material/Link';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
@@ -15,18 +25,27 @@ export default function SettingsPage() {
   const config = useQuery(api.appConfig.listConfig);
   const setConfig = useMutation(api.appConfig.setConfig);
 
-  const [modelName, setModelName] = React.useState('');
+  const [models, setModels] = React.useState<string[]>([]);
   const [zdrEnabled, setZdrEnabled] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveSuccess, setSaveSuccess] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
+  const [addDialogOpen, setAddDialogOpen] = React.useState(false);
+  const [newModelInput, setNewModelInput] = React.useState('');
+  const [newModelError, setNewModelError] = React.useState<string | null>(null);
 
   // Load current settings from config
   React.useEffect(() => {
     if (config) {
-      const modelConfig = config.find(c => c.key === 'openrouter_model');
+      const modelConfig = config.find(c => c.key === 'openrouter_models');
       if (modelConfig) {
-        setModelName(modelConfig.value);
+        try {
+          const parsedModels = JSON.parse(modelConfig.value);
+          setModels(Array.isArray(parsedModels) ? parsedModels : []);
+        } catch {
+          // If parsing fails, treat as empty array
+          setModels([]);
+        }
       }
 
       const zdrConfig = config.find(c => c.key === 'openrouter_zdr');
@@ -36,9 +55,9 @@ export default function SettingsPage() {
     }
   }, [config]);
 
-  const handleSaveModel = async () => {
-    if (!modelName.trim()) {
-      setSaveError('Model name cannot be empty');
+  const handleSaveModels = async (updatedModels: string[]) => {
+    if (updatedModels.length === 0) {
+      setSaveError('At least one model must be configured');
       return;
     }
 
@@ -48,9 +67,10 @@ export default function SettingsPage() {
 
     try {
       await setConfig({
-        key: 'openrouter_model',
-        value: modelName.trim(),
+        key: 'openrouter_models',
+        value: JSON.stringify(updatedModels),
       });
+      setModels(updatedModels);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
@@ -60,6 +80,43 @@ export default function SettingsPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDeleteModel = (modelToDelete: string) => {
+    const updatedModels = models.filter(m => m !== modelToDelete);
+    void handleSaveModels(updatedModels);
+  };
+
+  const handleAddModel = () => {
+    const trimmedModel = newModelInput.trim();
+
+    if (!trimmedModel) {
+      setNewModelError('Model identifier cannot be empty');
+      return;
+    }
+
+    if (models.includes(trimmedModel)) {
+      setNewModelError('This model is already in the list');
+      return;
+    }
+
+    const updatedModels = [...models, trimmedModel];
+    void handleSaveModels(updatedModels);
+    setAddDialogOpen(false);
+    setNewModelInput('');
+    setNewModelError(null);
+  };
+
+  const handleOpenAddDialog = () => {
+    setAddDialogOpen(true);
+    setNewModelInput('');
+    setNewModelError(null);
+  };
+
+  const handleCloseAddDialog = () => {
+    setAddDialogOpen(false);
+    setNewModelInput('');
+    setNewModelError(null);
   };
 
   return (
@@ -74,8 +131,8 @@ export default function SettingsPage() {
         </Typography>
 
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Configure the OpenRouter AI model used for chat responses. Enter the
-          model identifier (e.g., google/gemini-2.5-flash-preview-09-2025).
+          Configure the OpenRouter AI models available for chat responses. You
+          can add multiple models and select which one to use in each chat.
         </Typography>
 
         {saveSuccess && (
@@ -90,50 +147,139 @@ export default function SettingsPage() {
           </Alert>
         )}
 
-        <TextField
-          fullWidth
-          label="Model Name"
-          value={modelName}
-          onChange={e => setModelName(e.target.value)}
-          placeholder="google/gemini-2.5-flash-preview-09-2025"
-          sx={{ mb: 2 }}
-          helperText="The OpenRouter model identifier to use for AI responses"
-        />
-
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="contained"
-            onClick={handleSaveModel}
-            disabled={isSaving || !modelName.trim()}
+        <Box sx={{ mb: 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 1,
+            }}
           >
-            {isSaving ? 'Saving...' : 'Save'}
-          </Button>
-          {config?.find(c => c.key === 'openrouter_model') && (
+            <Typography variant="subtitle2" color="text.secondary">
+              Available Models
+            </Typography>
             <Button
-              variant="outlined"
-              onClick={() => {
-                const defaultModel = 'google/gemini-2.5-flash-preview-09-2025';
-                setModelName(defaultModel);
+              startIcon={<AddIcon />}
+              onClick={handleOpenAddDialog}
+              disabled={isSaving}
+              size="small"
+            >
+              Add Model
+            </Button>
+          </Box>
+
+          {models.length === 0 ? (
+            <Box
+              sx={{
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 1,
+                p: 3,
+                textAlign: 'center',
               }}
             >
-              Reset to Default
-            </Button>
+              <Typography variant="body2" color="text.secondary">
+                No models configured. Click "Add Model" to get started.
+              </Typography>
+            </Box>
+          ) : (
+            <List
+              sx={{
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 1,
+                bgcolor: 'background.paper',
+              }}
+            >
+              {models.map((model, index) => (
+                <ListItem
+                  key={model}
+                  secondaryAction={
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => handleDeleteModel(model)}
+                      disabled={isSaving}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  }
+                  divider={index < models.length - 1}
+                >
+                  <ListItemText
+                    primary={model}
+                    primaryTypographyProps={{
+                      fontFamily: 'monospace',
+                      fontSize: '0.875rem',
+                    }}
+                  />
+                </ListItem>
+              ))}
+            </List>
           )}
         </Box>
 
-        {config?.find(c => c.key === 'openrouter_model') && (
+        {config?.find(c => c.key === 'openrouter_models') && (
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ mt: 2, display: 'block' }}
+            sx={{ display: 'block' }}
           >
             Last updated:{' '}
             {new Date(
-              config.find(c => c.key === 'openrouter_model')!.updatedAt
+              config.find(c => c.key === 'openrouter_models')!.updatedAt
             ).toLocaleString()}
           </Typography>
         )}
       </Paper>
+
+      {/* Add Model Dialog */}
+      <Dialog
+        open={addDialogOpen}
+        onClose={handleCloseAddDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Add Model</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Enter the OpenRouter model identifier.
+          </Typography>
+
+          <TextField
+            autoFocus
+            fullWidth
+            label="Model Identifier"
+            placeholder="e.g., google/gemini-2.5-flash-preview-09-2025"
+            value={newModelInput}
+            onChange={e => {
+              setNewModelInput(e.target.value);
+              setNewModelError(null);
+            }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddModel();
+              }
+            }}
+            error={!!newModelError}
+            helperText={
+              newModelError || 'Enter the full OpenRouter model identifier'
+            }
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAddDialog}>Cancel</Button>
+          <Button
+            onClick={handleAddModel}
+            variant="contained"
+            disabled={!newModelInput.trim()}
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Paper sx={{ p: 3, mt: 3 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>

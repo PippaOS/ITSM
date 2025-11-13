@@ -35,8 +35,8 @@ function extractTitleFromMessage(
  * This enables optimistic updates on the client.
  */
 export const sendMessage = mutation({
-  args: { prompt: v.string(), threadId: v.string() },
-  handler: async (ctx, { prompt, threadId }) => {
+  args: { prompt: v.string(), threadId: v.string(), modelId: v.string() },
+  handler: async (ctx, { prompt, threadId, modelId }) => {
     await authorizeThreadAccess(ctx, threadId);
 
     // Check if we should set the thread title from the first message
@@ -75,6 +75,7 @@ export const sendMessage = mutation({
     await ctx.scheduler.runAfter(0, internal.chat.generateResponse, {
       threadId,
       promptMessageId: messageId,
+      modelId,
     });
   },
 });
@@ -84,8 +85,12 @@ export const sendMessage = mutation({
  * Any clients listing the messages will automatically get the new message.
  */
 export const generateResponse = internalAction({
-  args: { promptMessageId: v.string(), threadId: v.string() },
-  handler: async (ctx, { promptMessageId, threadId }) => {
+  args: {
+    promptMessageId: v.string(),
+    threadId: v.string(),
+    modelId: v.string(),
+  },
+  handler: async (ctx, { promptMessageId, threadId, modelId }) => {
     // Get userId from thread metadata before generating response
     const userId = await ctx.runQuery(internal.threads.getUserIdFromThread, {
       threadId,
@@ -98,8 +103,8 @@ export const generateResponse = internalAction({
     // All users have access to all tools
     const tools = getAllTools() as Record<string, GenericTool>;
 
-    // Get agent with dynamic model from database config
-    const dynamicAgent = await getAgentWithDynamicModel(ctx);
+    // Get agent with the specified model
+    const dynamicAgent = await getAgentWithDynamicModel(ctx, modelId);
 
     // Use streamText instead of generateText to enable real-time streaming
     // saveStreamDeltas automatically handles stream consumption and saves deltas
@@ -149,6 +154,36 @@ export const listThreadMessages = query({
 });
 
 /**
+ * Get the last model used in a thread (from the most recent assistant message).
+ */
+export const getLastUsedModel = query({
+  args: { threadId: v.string() },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, { threadId }) => {
+    await authorizeThreadAccess(ctx, threadId);
+
+    // Get messages directly from the agent component to access the model field
+    // Use descending order to get most recent messages first
+    const result = await ctx.runQuery(
+      components.agent.messages.listMessagesByThreadId,
+      { threadId, order: 'desc' as const }
+    );
+
+    // Find the last assistant message that has a model
+    // Messages are in descending order (newest first), so we can iterate from start
+    for (const msg of result.page) {
+      // Check if it's an assistant message by checking the role field
+      // Assistant messages have role: "assistant"
+      if (msg.message?.role === 'assistant' && msg.model) {
+        return msg.model;
+      }
+    }
+
+    return null;
+  },
+});
+
+/**
  * Public action to run a specific tool within a thread context.
  */
 export const runToolForThread = action({
@@ -178,8 +213,32 @@ export const runToolForThread = action({
       throw new Error(`Tool ${toolName} is not available for this thread`);
     }
 
-    // Get agent with dynamic model from database config
-    const dynamicAgent = await getAgentWithDynamicModel(ctx);
+    // Get agent with first available model from database config
+    // In tool invocations, we don't have a specific model selected, so use the first one
+    const modelsConfig = await ctx.runQuery(
+      internal.appConfig.getConfigInternal,
+      {
+        key: 'openrouter_models',
+      }
+    );
+
+    let modelToUse: string | null = null;
+    if (modelsConfig) {
+      try {
+        const parsedModels = JSON.parse(modelsConfig);
+        if (Array.isArray(parsedModels) && parsedModels.length > 0) {
+          modelToUse = parsedModels[0];
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    if (!modelToUse) {
+      throw new Error('No models configured');
+    }
+
+    const dynamicAgent = await getAgentWithDynamicModel(ctx, modelToUse);
 
     // Inject threadId and agent metadata into the tool context
     const toolContext = {

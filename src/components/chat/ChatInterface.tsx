@@ -2,10 +2,11 @@ import {
   type FormEvent,
   type UIEvent,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
-import { useMutation } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import {
   optimisticallySendMessage,
@@ -43,12 +44,71 @@ export function ChatInterface({
     optimisticallySendMessage(api.chat.listThreadMessages)
   );
 
+  // Get available models from config
+  const modelsConfig = useQuery(api.appConfig.getConfig, {
+    key: 'openrouter_models',
+  });
+
+  const availableModels = useMemo(() => {
+    if (!modelsConfig) return [];
+    try {
+      const parsed = JSON.parse(modelsConfig);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }, [modelsConfig]);
+
+  // Get the last used model for this thread
+  const lastUsedModel = useQuery(api.chat.getLastUsedModel, { threadId });
+
+  const [selectedModel, setSelectedModel] = useState<string>('');
   const [isSending, setIsSending] = useState(false);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [hasInitiallyScrolled, setHasInitiallyScrolled] = useState(false);
+  const [lastSetThreadId, setLastSetThreadId] = useState<string>('');
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Set default model: prefer last used model, then fall back to first available model
+  // This runs only when thread changes or when lastUsedModel loads for a new thread
+  useEffect(() => {
+    console.log('[ChatInterface] Model selection effect running', {
+      threadId,
+      lastUsedModel,
+      lastSetThreadId,
+      willSet:
+        availableModels.length > 0 &&
+        lastSetThreadId !== threadId &&
+        lastUsedModel !== undefined,
+    });
+
+    // Only set model if we haven't set it for this thread yet
+    if (availableModels.length > 0 && lastSetThreadId !== threadId) {
+      // Wait for lastUsedModel query to complete (it's undefined while loading)
+      if (lastUsedModel !== undefined) {
+        // If there's a last used model and it's still in the available models, use it
+        if (lastUsedModel && availableModels.includes(lastUsedModel)) {
+          console.log(
+            '[ChatInterface] Setting model to last used:',
+            lastUsedModel
+          );
+          setSelectedModel(lastUsedModel);
+        } else {
+          // Otherwise, use the first available model
+          console.log(
+            '[ChatInterface] Setting model to first available:',
+            availableModels[0]
+          );
+          setSelectedModel(availableModels[0]);
+        }
+        setLastSetThreadId(threadId);
+      }
+    }
+    // Only depend on threadId, lastUsedModel, and availableModels
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threadId, lastUsedModel, availableModels]);
 
   const totalMessages = messages?.length ?? 0;
   const hasMessages = totalMessages > 0;
@@ -114,10 +174,18 @@ export function ChatInterface({
     if (isSending) return;
     const trimmedPrompt = prompt.trim();
     if (trimmedPrompt === '') return;
+    if (!selectedModel) {
+      console.error('No model selected');
+      return;
+    }
     try {
       setIsSending(true);
       setAutoScrollEnabled(true);
-      await sendMessage({ threadId, prompt: trimmedPrompt });
+      await sendMessage({
+        threadId,
+        prompt: trimmedPrompt,
+        modelId: selectedModel,
+      });
       setPrompt('');
       requestAnimationFrame(() => scrollToBottom('smooth'));
       setShowScrollToBottom(false);
@@ -192,6 +260,9 @@ export function ChatInterface({
           disabled={composerDisabled}
           isSending={isSending}
           onEnableAutoScroll={() => setAutoScrollEnabled(true)}
+          availableModels={availableModels}
+          selectedModel={selectedModel}
+          onModelChange={setSelectedModel}
         />
       </Paper>
     </Box>

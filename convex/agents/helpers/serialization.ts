@@ -116,6 +116,8 @@ export function serializeTicket(ticket: {
   assignedTo?: unknown;
   assignedToName?: unknown;
   assignedToEmail?: unknown;
+  teamId?: unknown;
+  teamName?: unknown;
   updatedTime: unknown;
   machineId?: unknown;
   machineDisplayName?: unknown;
@@ -131,6 +133,8 @@ export function serializeTicket(ticket: {
   assignedTo?: string;
   assignedToName?: string;
   assignedToEmail?: string;
+  teamId?: string;
+  teamName?: string;
   updatedTime: string;
   machineId?: string;
   machineDisplayName?: string;
@@ -151,6 +155,8 @@ export function serializeTicket(ticket: {
     assignedToEmail: ticket.assignedToEmail
       ? String(ticket.assignedToEmail)
       : undefined,
+    teamId: ticket.teamId ? String(ticket.teamId) : undefined,
+    teamName: ticket.teamName ? String(ticket.teamName) : undefined,
     updatedTime: new Date(Number(ticket.updatedTime)).toISOString(),
     machineId: ticket.machineId ? String(ticket.machineId) : undefined,
     machineDisplayName: ticket.machineDisplayName

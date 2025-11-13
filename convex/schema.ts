@@ -74,11 +74,13 @@ export default defineSchema({
       v.literal('Awaiting')
     ),
     assignedTo: v.optional(v.id('users')),
+    teamId: v.optional(v.id('teams')),
     updatedTime: v.number(),
   })
     .index('by_user_id', ['userId'])
     .index('by_status', ['status'])
-    .index('by_assigned_to', ['assignedTo']),
+    .index('by_assigned_to', ['assignedTo'])
+    .index('by_team_id', ['teamId']),
 
   ticketMachines: defineTable({
     ticketId: v.id('tickets'),

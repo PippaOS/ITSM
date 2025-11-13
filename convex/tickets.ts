@@ -5,7 +5,7 @@ import {
   internalQuery,
 } from './_generated/server';
 import { v } from 'convex/values';
-import type { Id } from './_generated/dataModel';
+import type { Id, Doc } from './_generated/dataModel';
 import { getAuthUserId } from './utils';
 
 /**
@@ -32,6 +32,8 @@ export const listTickets = query({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      teamId: v.optional(v.id('teams')),
+      teamName: v.optional(v.string()),
       updatedTime: v.number(),
     })
   ),
@@ -45,12 +47,31 @@ export const listTickets = query({
     const tickets = await ctx.db.query('tickets').order('desc').collect();
 
     // Enrich tickets with user information
-    const result = [];
+    const result: Array<{
+      _id: Id<'tickets'>;
+      _creationTime: number;
+      userId: Id<'users'>;
+      userName: string;
+      userEmail: string | undefined;
+      name: string;
+      description: string;
+      status: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
+      assignedTo: Id<'users'> | undefined;
+      assignedToName: string | undefined;
+      assignedToEmail: string | undefined;
+      teamId: Id<'teams'> | undefined;
+      teamName: string | undefined;
+      updatedTime: number;
+    }> = [];
     for (const ticket of tickets) {
       const ticketUser = await ctx.db.get(ticket.userId);
-      let assignedToUser = null;
+      let assignedToUser: Doc<'users'> | null = null;
       if (ticket.assignedTo) {
         assignedToUser = await ctx.db.get(ticket.assignedTo);
+      }
+      let team: Doc<'teams'> | null = null;
+      if (ticket.teamId) {
+        team = await ctx.db.get(ticket.teamId);
       }
 
       result.push({
@@ -65,6 +86,8 @@ export const listTickets = query({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        teamId: ticket.teamId,
+        teamName: team?.name,
         updatedTime: ticket.updatedTime,
       });
     }
@@ -97,6 +120,8 @@ export const listTicketsCreatedByCurrentUser = query({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      teamId: v.optional(v.id('teams')),
+      teamName: v.optional(v.string()),
       updatedTime: v.number(),
     })
   ),
@@ -114,12 +139,31 @@ export const listTicketsCreatedByCurrentUser = query({
       .collect();
 
     // Enrich tickets with user information
-    const result = [];
+    const result: Array<{
+      _id: Id<'tickets'>;
+      _creationTime: number;
+      userId: Id<'users'>;
+      userName: string;
+      userEmail: string | undefined;
+      name: string;
+      description: string;
+      status: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
+      assignedTo: Id<'users'> | undefined;
+      assignedToName: string | undefined;
+      assignedToEmail: string | undefined;
+      teamId: Id<'teams'> | undefined;
+      teamName: string | undefined;
+      updatedTime: number;
+    }> = [];
     for (const ticket of tickets) {
       const ticketUser = await ctx.db.get(ticket.userId);
-      let assignedToUser = null;
+      let assignedToUser: Doc<'users'> | null = null;
       if (ticket.assignedTo) {
         assignedToUser = await ctx.db.get(ticket.assignedTo);
+      }
+      let team: Doc<'teams'> | null = null;
+      if (ticket.teamId) {
+        team = await ctx.db.get(ticket.teamId);
       }
 
       result.push({
@@ -134,6 +178,8 @@ export const listTicketsCreatedByCurrentUser = query({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        teamId: ticket.teamId,
+        teamName: team?.name,
         updatedTime: ticket.updatedTime,
       });
     }
@@ -166,6 +212,8 @@ export const listTicketsAssignedToCurrentUser = query({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      teamId: v.optional(v.id('teams')),
+      teamName: v.optional(v.string()),
       updatedTime: v.number(),
     })
   ),
@@ -183,12 +231,31 @@ export const listTicketsAssignedToCurrentUser = query({
       .collect();
 
     // Enrich tickets with user information
-    const result = [];
+    const result: Array<{
+      _id: Id<'tickets'>;
+      _creationTime: number;
+      userId: Id<'users'>;
+      userName: string;
+      userEmail: string | undefined;
+      name: string;
+      description: string;
+      status: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
+      assignedTo: Id<'users'> | undefined;
+      assignedToName: string | undefined;
+      assignedToEmail: string | undefined;
+      teamId: Id<'teams'> | undefined;
+      teamName: string | undefined;
+      updatedTime: number;
+    }> = [];
     for (const ticket of tickets) {
       const ticketUser = await ctx.db.get(ticket.userId);
-      let assignedToUser = null;
+      let assignedToUser: Doc<'users'> | null = null;
       if (ticket.assignedTo) {
         assignedToUser = await ctx.db.get(ticket.assignedTo);
+      }
+      let team: Doc<'teams'> | null = null;
+      if (ticket.teamId) {
+        team = await ctx.db.get(ticket.teamId);
       }
 
       result.push({
@@ -203,6 +270,8 @@ export const listTicketsAssignedToCurrentUser = query({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        teamId: ticket.teamId,
+        teamName: team?.name,
         updatedTime: ticket.updatedTime,
       });
     }
@@ -235,6 +304,8 @@ export const listTicketsByMachine = query({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      teamId: v.optional(v.id('teams')),
+      teamName: v.optional(v.string()),
       updatedTime: v.number(),
     })
   ),
@@ -251,15 +322,34 @@ export const listTicketsByMachine = query({
       .collect();
 
     // Get all related tickets
-    const result = [];
+    const result: Array<{
+      _id: Id<'tickets'>;
+      _creationTime: number;
+      userId: Id<'users'>;
+      userName: string;
+      userEmail: string | undefined;
+      name: string;
+      description: string;
+      status: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
+      assignedTo: Id<'users'> | undefined;
+      assignedToName: string | undefined;
+      assignedToEmail: string | undefined;
+      teamId: Id<'teams'> | undefined;
+      teamName: string | undefined;
+      updatedTime: number;
+    }> = [];
     for (const ticketMachine of ticketMachines) {
       const ticket = await ctx.db.get(ticketMachine.ticketId);
       if (!ticket) continue;
 
       const ticketUser = await ctx.db.get(ticket.userId);
-      let assignedToUser = null;
+      let assignedToUser: Doc<'users'> | null = null;
       if (ticket.assignedTo) {
         assignedToUser = await ctx.db.get(ticket.assignedTo);
+      }
+      let team: Doc<'teams'> | null = null;
+      if (ticket.teamId) {
+        team = await ctx.db.get(ticket.teamId);
       }
 
       result.push({
@@ -274,6 +364,8 @@ export const listTicketsByMachine = query({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        teamId: ticket.teamId,
+        teamName: team?.name,
         updatedTime: ticket.updatedTime,
       });
     }
@@ -310,6 +402,8 @@ export const getTicket = query({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      teamId: v.optional(v.id('teams')),
+      teamName: v.optional(v.string()),
       updatedTime: v.number(),
     })
   ),
@@ -325,9 +419,13 @@ export const getTicket = query({
     }
 
     const ticketUser = await ctx.db.get(ticket.userId);
-    let assignedToUser = null;
+    let assignedToUser: Doc<'users'> | null = null;
     if (ticket.assignedTo) {
       assignedToUser = await ctx.db.get(ticket.assignedTo);
+    }
+    let team: Doc<'teams'> | null = null;
+    if (ticket.teamId) {
+      team = await ctx.db.get(ticket.teamId);
     }
 
     return {
@@ -342,6 +440,8 @@ export const getTicket = query({
       assignedTo: ticket.assignedTo,
       assignedToName: assignedToUser?.name,
       assignedToEmail: assignedToUser?.email,
+      teamId: ticket.teamId,
+      teamName: team?.name,
       updatedTime: ticket.updatedTime,
     };
   },
@@ -362,6 +462,7 @@ export const createTicket = mutation({
       v.literal('Awaiting')
     ),
     assignedTo: v.optional(v.id('users')),
+    teamId: v.optional(v.id('teams')),
     machineIds: v.optional(v.array(v.id('machines'))), // Optional array of machine IDs
   },
   returns: v.id('tickets'),
@@ -369,6 +470,26 @@ export const createTicket = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) {
       throw new Error('Not authenticated');
+    }
+
+    // If teamId is provided, verify the team exists
+    if (args.teamId) {
+      const team = await ctx.db.get(args.teamId);
+      if (!team) {
+        throw new Error('Team not found');
+      }
+
+      // If assignedTo is provided with a teamId, verify the user is a member of the team
+      if (args.assignedTo) {
+        const teamMembers = await ctx.db
+          .query('teamMembers')
+          .withIndex('by_team_id', q => q.eq('teamId', args.teamId!))
+          .collect();
+        const isMember = teamMembers.some(tm => tm.userId === args.assignedTo);
+        if (!isMember) {
+          throw new Error('Assigned user is not a member of the selected team');
+        }
+      }
     }
 
     // If machineIds are provided, verify all machines exist
@@ -389,6 +510,7 @@ export const createTicket = mutation({
       description: args.description.trim(),
       status: args.status,
       assignedTo: args.assignedTo,
+      teamId: args.teamId,
       updatedTime: now,
     });
 
@@ -424,6 +546,7 @@ export const updateTicket = mutation({
       )
     ),
     assignedTo: v.optional(v.union(v.id('users'), v.null())),
+    teamId: v.optional(v.union(v.id('teams'), v.null())),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -437,11 +560,44 @@ export const updateTicket = mutation({
       throw new Error('Ticket not found');
     }
 
+    // Determine the effective teamId (new value or current value)
+    const effectiveTeamId =
+      args.teamId !== undefined ? (args.teamId ?? undefined) : ticket.teamId;
+
+    // If teamId is being set (not null/undefined), verify the team exists
+    if (args.teamId !== undefined && args.teamId !== null) {
+      const team = await ctx.db.get(args.teamId);
+      if (!team) {
+        throw new Error('Team not found');
+      }
+    }
+
+    // Determine the effective assignedTo (new value or current value)
+    const effectiveAssignedTo =
+      args.assignedTo !== undefined
+        ? (args.assignedTo ?? undefined)
+        : ticket.assignedTo;
+
+    // If we have both a team and an assigned user, verify the user is a member
+    if (effectiveTeamId && effectiveAssignedTo) {
+      const teamMembers = await ctx.db
+        .query('teamMembers')
+        .withIndex('by_team_id', q => q.eq('teamId', effectiveTeamId))
+        .collect();
+      const isMember = teamMembers.some(
+        tm => tm.userId === effectiveAssignedTo
+      );
+      if (!isMember) {
+        throw new Error('Assigned user is not a member of the selected team');
+      }
+    }
+
     const updates: {
       name?: string;
       description?: string;
       status?: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
       assignedTo?: Id<'users'>;
+      teamId?: Id<'teams'>;
       updatedTime: number;
     } = {
       updatedTime: Date.now(),
@@ -459,6 +615,10 @@ export const updateTicket = mutation({
     if (args.assignedTo !== undefined) {
       // Convert null to undefined since schema doesn't allow null
       updates.assignedTo = args.assignedTo ?? undefined;
+    }
+    if (args.teamId !== undefined) {
+      // Convert null to undefined since schema doesn't allow null
+      updates.teamId = args.teamId ?? undefined;
     }
 
     await ctx.db.patch(args.ticketId, updates);
@@ -482,6 +642,7 @@ export const createTicketForUser = internalMutation({
       v.literal('Awaiting')
     ),
     assignedTo: v.optional(v.id('users')), // Convex ID
+    teamId: v.optional(v.id('teams')), // Convex ID
     machineIds: v.optional(v.array(v.id('machines'))), // Optional array of machine IDs
   },
   returns: v.id('tickets'),
@@ -490,6 +651,26 @@ export const createTicketForUser = internalMutation({
     const user = await ctx.db.get(args.userId);
     if (!user) {
       throw new Error('User not found');
+    }
+
+    // If teamId is provided, verify the team exists
+    if (args.teamId) {
+      const team = await ctx.db.get(args.teamId);
+      if (!team) {
+        throw new Error('Team not found');
+      }
+
+      // If assignedTo is provided with a teamId, verify the user is a member of the team
+      if (args.assignedTo) {
+        const teamMembers = await ctx.db
+          .query('teamMembers')
+          .withIndex('by_team_id', q => q.eq('teamId', args.teamId!))
+          .collect();
+        const isMember = teamMembers.some(tm => tm.userId === args.assignedTo);
+        if (!isMember) {
+          throw new Error('Assigned user is not a member of the selected team');
+        }
+      }
     }
 
     // If assignedTo is provided, verify the user exists
@@ -518,6 +699,7 @@ export const createTicketForUser = internalMutation({
       description: args.description.trim(),
       status: args.status,
       assignedTo: args.assignedTo,
+      teamId: args.teamId,
       updatedTime: now,
     });
 
@@ -561,6 +743,8 @@ export const listTicketsAssignedToUser = internalQuery({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      teamId: v.optional(v.id('teams')),
+      teamName: v.optional(v.string()),
       updatedTime: v.number(),
     })
   ),
@@ -579,12 +763,31 @@ export const listTicketsAssignedToUser = internalQuery({
       .collect();
 
     // Enrich tickets with user information
-    const result = [];
+    const result: Array<{
+      _id: Id<'tickets'>;
+      _creationTime: number;
+      userId: Id<'users'>;
+      userName: string;
+      userEmail: string | undefined;
+      name: string;
+      description: string;
+      status: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
+      assignedTo: Id<'users'> | undefined;
+      assignedToName: string | undefined;
+      assignedToEmail: string | undefined;
+      teamId: Id<'teams'> | undefined;
+      teamName: string | undefined;
+      updatedTime: number;
+    }> = [];
     for (const ticket of tickets) {
       const ticketUser = await ctx.db.get(ticket.userId);
-      let assignedToUser = null;
+      let assignedToUser: Doc<'users'> | null = null;
       if (ticket.assignedTo) {
         assignedToUser = await ctx.db.get(ticket.assignedTo);
+      }
+      let team: Doc<'teams'> | null = null;
+      if (ticket.teamId) {
+        team = await ctx.db.get(ticket.teamId);
       }
 
       result.push({
@@ -599,6 +802,8 @@ export const listTicketsAssignedToUser = internalQuery({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        teamId: ticket.teamId,
+        teamName: team?.name,
         updatedTime: ticket.updatedTime,
       });
     }
@@ -633,6 +838,8 @@ export const listTicketsCreatedByUser = internalQuery({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      teamId: v.optional(v.id('teams')),
+      teamName: v.optional(v.string()),
       updatedTime: v.number(),
     })
   ),
@@ -651,12 +858,31 @@ export const listTicketsCreatedByUser = internalQuery({
       .collect();
 
     // Enrich tickets with user information
-    const result = [];
+    const result: Array<{
+      _id: Id<'tickets'>;
+      _creationTime: number;
+      userId: Id<'users'>;
+      userName: string;
+      userEmail: string | undefined;
+      name: string;
+      description: string;
+      status: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
+      assignedTo: Id<'users'> | undefined;
+      assignedToName: string | undefined;
+      assignedToEmail: string | undefined;
+      teamId: Id<'teams'> | undefined;
+      teamName: string | undefined;
+      updatedTime: number;
+    }> = [];
     for (const ticket of tickets) {
       const ticketUser = await ctx.db.get(ticket.userId);
-      let assignedToUser = null;
+      let assignedToUser: Doc<'users'> | null = null;
       if (ticket.assignedTo) {
         assignedToUser = await ctx.db.get(ticket.assignedTo);
+      }
+      let team: Doc<'teams'> | null = null;
+      if (ticket.teamId) {
+        team = await ctx.db.get(ticket.teamId);
       }
 
       result.push({
@@ -671,6 +897,8 @@ export const listTicketsCreatedByUser = internalQuery({
         assignedTo: ticket.assignedTo,
         assignedToName: assignedToUser?.name,
         assignedToEmail: assignedToUser?.email,
+        teamId: ticket.teamId,
+        teamName: team?.name,
         updatedTime: ticket.updatedTime,
       });
     }
@@ -706,6 +934,8 @@ export const getTicketById = internalQuery({
       assignedTo: v.optional(v.id('users')),
       assignedToName: v.optional(v.string()),
       assignedToEmail: v.optional(v.string()),
+      teamId: v.optional(v.id('teams')),
+      teamName: v.optional(v.string()),
       updatedTime: v.number(),
       notes: v.array(
         v.object({
@@ -727,9 +957,13 @@ export const getTicketById = internalQuery({
     }
 
     const ticketUser = await ctx.db.get(ticket.userId);
-    let assignedToUser = null;
+    let assignedToUser: Doc<'users'> | null = null;
     if (ticket.assignedTo) {
       assignedToUser = await ctx.db.get(ticket.assignedTo);
+    }
+    let team: Doc<'teams'> | null = null;
+    if (ticket.teamId) {
+      team = await ctx.db.get(ticket.teamId);
     }
 
     // Fetch notes for this ticket
@@ -742,7 +976,15 @@ export const getTicketById = internalQuery({
       .collect();
 
     // Enrich notes with creator information
-    const enrichedNotes = [];
+    const enrichedNotes: Array<{
+      _id: Id<'notes'>;
+      _creationTime: number;
+      entityTable: string;
+      entityId: string;
+      content: string;
+      createdBy: Id<'users'>;
+      createdByEmail: string | undefined;
+    }> = [];
     for (const note of notes) {
       const noteCreator = await ctx.db.get(note.createdBy);
       enrichedNotes.push({
@@ -768,6 +1010,8 @@ export const getTicketById = internalQuery({
       assignedTo: ticket.assignedTo,
       assignedToName: assignedToUser?.name,
       assignedToEmail: assignedToUser?.email,
+      teamId: ticket.teamId,
+      teamName: team?.name,
       updatedTime: ticket.updatedTime,
       notes: enrichedNotes,
     };
@@ -903,7 +1147,24 @@ export const getMachinesForTicket = query({
       .collect();
 
     // Get machine details
-    const result = [];
+    const result: Array<{
+      _id: Id<'machines'>;
+      _creationTime: number;
+      name: string;
+      make: string;
+      model: string;
+      type: 'Laptop' | 'Desktop' | 'Server';
+      status:
+        | 'Available'
+        | 'Assigned'
+        | 'In Use'
+        | 'Maintenance'
+        | 'Retired'
+        | 'Decommissioned'
+        | 'Lost';
+      assignedToUserId: Id<'users'> | undefined;
+      assignedToUserName: string | undefined;
+    }> = [];
     for (const ticketMachine of ticketMachines) {
       const machine = await ctx.db.get(ticketMachine.machineId);
       if (!machine) continue;
@@ -949,6 +1210,7 @@ export const updateTicketForUser = internalMutation({
       )
     ),
     assignedTo: v.optional(v.union(v.id('users'), v.null())), // Convex ID, or null to unassign
+    teamId: v.optional(v.union(v.id('teams'), v.null())), // Convex ID, or null to remove team
   },
   returns: v.id('tickets'),
   handler: async (ctx, args) => {
@@ -958,12 +1220,45 @@ export const updateTicketForUser = internalMutation({
       throw new Error('Ticket not found');
     }
 
+    // Determine the effective teamId (new value or current value)
+    const effectiveTeamId =
+      args.teamId !== undefined ? (args.teamId ?? undefined) : ticket.teamId;
+
+    // If teamId is being set (not null/undefined), verify the team exists
+    if (args.teamId !== undefined && args.teamId !== null) {
+      const team = await ctx.db.get(args.teamId);
+      if (!team) {
+        throw new Error('Team not found');
+      }
+    }
+
+    // Determine the effective assignedTo (new value or current value)
+    const effectiveAssignedTo =
+      args.assignedTo !== undefined
+        ? (args.assignedTo ?? undefined)
+        : ticket.assignedTo;
+
+    // If we have both a team and an assigned user, verify the user is a member
+    if (effectiveTeamId && effectiveAssignedTo) {
+      const teamMembers = await ctx.db
+        .query('teamMembers')
+        .withIndex('by_team_id', q => q.eq('teamId', effectiveTeamId))
+        .collect();
+      const isMember = teamMembers.some(
+        tm => tm.userId === effectiveAssignedTo
+      );
+      if (!isMember) {
+        throw new Error('Assigned user is not a member of the selected team');
+      }
+    }
+
     // Build updates object
     const updates: {
       name?: string;
       description?: string;
       status?: 'Open' | 'Assigned' | 'Closed' | 'On Hold' | 'Awaiting';
       assignedTo?: Id<'users'>;
+      teamId?: Id<'teams'>;
       updatedTime: number;
     } = {
       updatedTime: Date.now(),
@@ -991,6 +1286,11 @@ export const updateTicketForUser = internalMutation({
         }
         updates.assignedTo = args.assignedTo;
       }
+    }
+
+    // Handle teamId - convert null to undefined
+    if (args.teamId !== undefined) {
+      updates.teamId = args.teamId ?? undefined;
     }
 
     // Apply updates
