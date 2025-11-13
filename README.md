@@ -115,16 +115,21 @@ npx convex env set OPENROUTER_API_KEY=your-openrouter-key
 
 ### AI Model Configuration
 
-You must configure the AI model before using the chat assistant. After starting the application, navigate to the Settings page (`/settings`) and configure the OpenRouter AI model that will be used for chat responses. Enter the model identifier in the "Model Name" field and click "Save".
+You must configure the AI model before using the chat assistant. After starting the application, navigate to the Settings page (`/settings`) and configure the OpenRouter AI models that will be available for chat responses. You can add multiple models by clicking the "+ ADD MODEL" button and entering the model identifier.
 
 ![AI Model Configuration Settings](pippaos-itsm-2.png)
+
+Once you've added models, you can select which model to use directly in the chat interface. The model selector appears below the message input field, allowing you to switch between available models at any time midway through a conversation.
+
+![Model Selection in Chat](pippaos-itsm-5.png)
 
 **Tested Models:**
 
 The following OpenRouter models have been tested and work correctly:
 
 - `anthropic/claude-haiku-4.5`
-- `google/gemini-2.5-flash-preview-09-2025`
+- `google/gemini-2.5-flash-lite`
+- `google/gemini-2.5-flash-lite-preview-09-2025`
 
 You can use any OpenRouter model identifier, but make sure to test it before using it in production.
 
