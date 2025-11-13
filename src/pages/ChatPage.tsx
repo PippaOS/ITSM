@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { usePaginatedQuery } from 'convex-helpers/react';
 import { api } from '../../convex/_generated/api';
 import { Box } from '@mui/material';
-import { ChatWelcome } from '../components/chat/ChatWelcome';
 import { ChatInterface } from '../components/chat/ChatInterface';
 
 export default function ChatPage() {
@@ -80,16 +79,12 @@ export default function ChatPage() {
         py: { xs: 2, md: 4 },
       }}
     >
-      {threadId || isDraft ? (
-        <ChatInterface
-          threadId={threadId}
-          prompt={prompt}
-          setPrompt={setPrompt}
-          onThreadCreated={handleThreadCreated}
-        />
-      ) : (
-        <ChatWelcome />
-      )}
+      <ChatInterface
+        threadId={threadId}
+        prompt={prompt}
+        setPrompt={setPrompt}
+        onThreadCreated={handleThreadCreated}
+      />
     </Box>
   );
 }

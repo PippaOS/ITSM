@@ -18,7 +18,6 @@ import { useTheme } from '@mui/material/styles';
 import { MessageList } from './MessageList';
 import { ScrollToBottomFab } from './ScrollToBottomFab';
 import { MessageComposer, type MessageComposerRef } from './MessageComposer';
-import { ChatWelcome } from './ChatWelcome';
 
 interface ChatInterfaceProps {
   threadId: string | null;
@@ -293,9 +292,7 @@ export function ChatInterface({
             flexDirection: 'column',
           }}
         >
-          {isDraft ? (
-            <ChatWelcome />
-          ) : (
+          {!isDraft && (
             <>
               <MessageList
                 messages={messages}
